@@ -30,6 +30,10 @@ public class Order {
     private BigDecimal totalAmount;
     @Column(length = 30)
     private String status;
+    @Column(name = "status_updated_at")
+    private LocalDateTime statusUpdatedAt;
+    @Column(name = "updated_by")
+    private String updatedBy;
 
 
     @java.lang.SuppressWarnings("all")
@@ -56,6 +60,12 @@ public class Order {
         @java.lang.SuppressWarnings("all")
         
         private String status;
+        @java.lang.SuppressWarnings("all")
+        
+        private LocalDateTime statusUpdatedAt;
+        @java.lang.SuppressWarnings("all")
+        
+        private String updatedBy;
 
         @java.lang.SuppressWarnings("all")
         
@@ -132,10 +142,30 @@ public class Order {
             return this;
         }
 
+        /**
+         * @return {@code this}.
+         */
+        @java.lang.SuppressWarnings("all")
+        
+        public Order.OrderBuilder statusUpdatedAt(final LocalDateTime statusUpdatedAt) {
+            this.statusUpdatedAt = statusUpdatedAt;
+            return this;
+        }
+
+        /**
+         * @return {@code this}.
+         */
+        @java.lang.SuppressWarnings("all")
+        
+        public Order.OrderBuilder updatedBy(final String updatedBy) {
+            this.updatedBy = updatedBy;
+            return this;
+        }
+
         @java.lang.SuppressWarnings("all")
         
         public Order build() {
-            return new Order(this.orderId, this.user, this.shippingAddress, this.billingAddress, this.orderDate, this.totalAmount, this.status);
+            return new Order(this.orderId, this.user, this.shippingAddress, this.billingAddress, this.orderDate, this.totalAmount, this.status, this.statusUpdatedAt, this.updatedBy);
         }
 
         @java.lang.Override
@@ -196,6 +226,18 @@ public class Order {
 
     @java.lang.SuppressWarnings("all")
     
+    public LocalDateTime getStatusUpdatedAt() {
+        return this.statusUpdatedAt;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public String getUpdatedBy() {
+        return this.updatedBy;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
     public void setOrderId(final Integer orderId) {
         this.orderId = orderId;
     }
@@ -236,6 +278,18 @@ public class Order {
         this.status = status;
     }
 
+    @java.lang.SuppressWarnings("all")
+    
+    public void setStatusUpdatedAt(final LocalDateTime statusUpdatedAt) {
+        this.statusUpdatedAt = statusUpdatedAt;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public void setUpdatedBy(final String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
     @java.lang.Override
     @java.lang.SuppressWarnings("all")
     
@@ -265,6 +319,12 @@ public class Order {
         final java.lang.Object this$status = this.getStatus();
         final java.lang.Object other$status = other.getStatus();
         if (this$status == null ? other$status != null : !this$status.equals(other$status)) return false;
+        final java.lang.Object this$statusUpdatedAt = this.getStatusUpdatedAt();
+        final java.lang.Object other$statusUpdatedAt = other.getStatusUpdatedAt();
+        if (this$statusUpdatedAt == null ? other$statusUpdatedAt != null : !this$statusUpdatedAt.equals(other$statusUpdatedAt)) return false;
+        final java.lang.Object this$updatedBy = this.getUpdatedBy();
+        final java.lang.Object other$updatedBy = other.getUpdatedBy();
+        if (this$updatedBy == null ? other$updatedBy != null : !this$updatedBy.equals(other$updatedBy)) return false;
         return true;
     }
 
@@ -294,6 +354,10 @@ public class Order {
         result = result * PRIME + ($totalAmount == null ? 43 : $totalAmount.hashCode());
         final java.lang.Object $status = this.getStatus();
         result = result * PRIME + ($status == null ? 43 : $status.hashCode());
+        final java.lang.Object $statusUpdatedAt = this.getStatusUpdatedAt();
+        result = result * PRIME + ($statusUpdatedAt == null ? 43 : $statusUpdatedAt.hashCode());
+        final java.lang.Object $updatedBy = this.getUpdatedBy();
+        result = result * PRIME + ($updatedBy == null ? 43 : $updatedBy.hashCode());
         return result;
     }
 
@@ -301,7 +365,7 @@ public class Order {
     @java.lang.SuppressWarnings("all")
     
     public java.lang.String toString() {
-        return "Order(orderId=" + this.getOrderId() + ", user=" + this.getUser() + ", shippingAddress=" + this.getShippingAddress() + ", billingAddress=" + this.getBillingAddress() + ", orderDate=" + this.getOrderDate() + ", totalAmount=" + this.getTotalAmount() + ", status=" + this.getStatus() + ")";
+        return "Order(orderId=" + this.getOrderId() + ", user=" + this.getUser() + ", shippingAddress=" + this.getShippingAddress() + ", billingAddress=" + this.getBillingAddress() + ", orderDate=" + this.getOrderDate() + ", totalAmount=" + this.getTotalAmount() + ", status=" + this.getStatus() + ", statusUpdatedAt=" + this.getStatusUpdatedAt() + ", updatedBy=" + this.getUpdatedBy() + ")";
     }
 
     @java.lang.SuppressWarnings("all")
@@ -311,7 +375,7 @@ public class Order {
 
     @java.lang.SuppressWarnings("all")
     
-    public Order(final Integer orderId, final User user, final Address shippingAddress, final Address billingAddress, final LocalDateTime orderDate, final BigDecimal totalAmount, final String status) {
+    public Order(final Integer orderId, final User user, final Address shippingAddress, final Address billingAddress, final LocalDateTime orderDate, final BigDecimal totalAmount, final String status, final LocalDateTime statusUpdatedAt, final String updatedBy) {
         this.orderId = orderId;
         this.user = user;
         this.shippingAddress = shippingAddress;
@@ -319,5 +383,7 @@ public class Order {
         this.orderDate = orderDate;
         this.totalAmount = totalAmount;
         this.status = status;
+        this.statusUpdatedAt = statusUpdatedAt;
+        this.updatedBy = updatedBy;
     }
 }

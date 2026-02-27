@@ -30,6 +30,12 @@ public class User {
     @Column(nullable = false, length = 20)
     private String role;
 
+    @Column(name = "security_question", length = 200)
+    private String securityQuestion;
+
+    @Column(name = "security_answer", length = 200)
+    private String securityAnswer;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -45,14 +51,16 @@ public class User {
 
     public User(Integer userId, String name, String email,
                 String passwordHash, String phone,
-                String role, LocalDateTime createdAt,
-                LocalDateTime updatedAt) {
+                String role, String securityQuestion, String securityAnswer,
+                LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.userId = userId;
         this.name = name;
         this.email = email;
         this.passwordHash = passwordHash;
         this.phone = phone;
         this.role = role;
+        this.securityQuestion = securityQuestion;
+        this.securityAnswer = securityAnswer;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -81,6 +89,14 @@ public class User {
 
     public String getRole() {
         return role;
+    }
+
+    public String getSecurityQuestion() {
+        return securityQuestion;
+    }
+
+    public String getSecurityAnswer() {
+        return securityAnswer;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -115,6 +131,14 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public void setSecurityQuestion(String securityQuestion) {
+        this.securityQuestion = securityQuestion;
+    }
+
+    public void setSecurityAnswer(String securityAnswer) {
+        this.securityAnswer = securityAnswer;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {

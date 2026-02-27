@@ -13,6 +13,9 @@ public interface IReviewRepository extends JpaRepository<Review, Integer> {
     List<Review> findByProductProductId(Integer productId);
     Page<Review> findByProductProductId(Integer productId, Pageable pageable);
     List<Review> findByUserUserId(Integer userId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT AVG(r.rating) FROM Review r WHERE r.product.productId = :productId")
+    Double getAverageRatingByProductId(Integer productId);
 }
 
 
