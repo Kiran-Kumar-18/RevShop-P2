@@ -46,6 +46,8 @@ public class ProductMapper {
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .imageUrl(imgUrl)
+                .averageRating(0.0)
+                .soldCount(0)
                 .build();
     }
 }
