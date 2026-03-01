@@ -6,6 +6,8 @@ import com.rev.app.entity.Seller;
 import com.rev.app.repository.ICategoryRepository;
 import com.rev.app.repository.IUserRepository;
 import com.rev.app.repository.ISellerRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,7 @@ import java.util.Optional;
 
 @Component
 public class DataSeeder implements CommandLineRunner {
+    private static final Logger logger = LogManager.getLogger(DataSeeder.class);
 
     private final ICategoryRepository categoryRepository;
     private final IUserRepository userRepository;
@@ -42,7 +45,7 @@ public class DataSeeder implements CommandLineRunner {
                      newSeller.setBusinessName(user.getName() + " Store");
                      newSeller.setCreatedAt(LocalDateTime.now());
                      sellerRepository.save(newSeller);
-                     System.out.println(" Backfilled missing Seller profile for User ID: " + user.getUserId());
+                     logger.info("Backfilled missing Seller profile for User ID: {}", user.getUserId());
                  }
              }
         }
@@ -66,7 +69,7 @@ public class DataSeeder implements CommandLineRunner {
         for (Category category : defaultCategories) {
             if (!categoryRepository.existsByName(category.getName())) {
                 categoryRepository.save(category);
-                System.out.println(" Seeded category: " + category.getName());
+                logger.info("Seeded category: {}", category.getName());
             }
         }
     }
