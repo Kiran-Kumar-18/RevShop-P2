@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Shopping & Delivery Info | RevShop Help</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container">
+            <div class="page-header" style="text-align: center; margin-bottom: var(--space-2xl);">
+                <h1>Shopping & Delivery</h1>
+                <p>Everything you need to know about ordering on RevShop</p>
+            </div>
+
+            <div class="help-section" style="max-width: 900px; margin: 0 auto;">
+                <article class="card" style="margin-bottom: var(--space-xl);">
+                    <div class="card-body">
+                        <h2 style="color: var(--primary-light); margin-bottom: var(--space-md);">1. How to Order</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: var(--space-sm);">Ordering at RevShop is
+                            simple and secure:</p>
+                        <ul style="color: var(--text-secondary); padding-left: var(--space-lg); line-height: 1.8;">
+                            <li>Browse products by category or use the search bar.</li>
+                            <li>Click on a product to view details, ratings, and reviews.</li>
+                            <li>Add the desired quantity to your cart.</li>
+                            <li>Review your cart and proceed to checkout.</li>
+                            <li>Provide your delivery address and complete the payment.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <article class="card" style="margin-bottom: var(--space-xl);">
+                    <div class="card-body">
+                        <h2 style="color: var(--primary-light); margin-bottom: var(--space-md);">2. Payment Methods</h2>
+                        <p style="color: var(--text-secondary);">We provide a variety of payment options to ensure
+                            convenience:</p>
+                        <div style="display: flex; gap: var(--space-md); margin-top: var(--space-sm); font-size: 24px;">
+                            <span title="Visa">💳</span> <span title="Mastercard">🎴</span> <span
+                                title="Digital Wallet">📱</span> <span title="Bank Transfer">🏦</span>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-top: var(--space-sm);">All payments are processed
+                            through secure gateways, and your financial data is never stored on our servers.</p>
+                    </div>
+                </article>
+
+                <article class="card" style="margin-bottom: var(--space-xl);">
+                    <div class="card-body">
+                        <h2 style="color: var(--primary-light); margin-bottom: var(--space-md);">3. Delivery & Shipping
+                        </h2>
+                        <p style="color: var(--text-secondary); margin-bottom: var(--space-sm);">We work with reliable
+                            logistics partners to get your products to you safely:</p>
+                        <ul style="color: var(--text-secondary); padding-left: var(--space-lg); line-height: 1.8;">
+                            <li><strong>Standard Shipping:</strong> Usually delivered within 3-5 business days.</li>
+                            <li><strong>Express Shipping:</strong> Available for select locations with delivery in 1-2
+                                business days.</li>
+                            <li><strong>Shipping Costs:</strong> Calculated based on weight and destination at checkout.
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+</body>
+
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>My Products | RevShop Seller</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h1>My Products</h1>
+                    <p>Manage your product inventory</p>
+                </div>
+                <a th:href="@{/seller/products/new}" class="btn btn-primary">+ Add New Product</a>
+            </div>
+
+            <div id="products-table" class="table-responsive">
+                <p>Loading products...</p>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+
+    <script>
+        async function loadSellerProducts() {
+            const user = RevShop.getUserInfo();
+            if (!user || user.role !== 'ROLE_SELLER') {
+                window.location.href = '/login'; return;
+            }
+
+            const container = document.getElementById('products-table');
+
+            try {
+                const res = await RevShop.getSellerProducts(user.userId);
+                if (res.success && res.data && res.data.length > 0) {
+                    container.innerHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${res.data.map(p => `
+                                    <tr>
+                                        <td><img src="${p.imageUrl}" alt="Product" style="width:40px;height:40px;object-fit:cover;border-radius:4px;"></td>
+                                        <td><strong>${p.name}</strong></td>
+                                        <td>${p.categoryName || '-'}</td>
+                                        <td>${RevShop.formatCurrency(p.price)}</td>
+                                        <td>
+                                            <div style="display:flex;align-items:center;gap:10px;">
+                                                <button class="btn btn-sm btn-outline" onclick="changeStock(${p.productId}, -1)">-</button>
+                                                <strong>${p.stockQuantity}</strong>
+                                                <button class="btn btn-sm btn-outline" onclick="changeStock(${p.productId}, 1)">+</button>
+                                            </div>
+                                        </td>
+                                        <td>${p.isActive ? '<span class="status-badge delivered">Active</span>' : '<span class="status-badge cancelled">Inactive</span>'}</td>
+                                        <td>
+                                            <div style="display:flex;gap:5px;">
+                                                <a href="/seller/products/edit/${p.productId}" class="btn btn-secondary btn-sm">Edit</a>
+                                                <button class="btn btn-danger btn-sm" onclick="handleDelete(${p.productId})">Delete</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    container.innerHTML = '<div class="text-center" style="padding:40px;"><h3>No products found.</h3><a href="/seller/products/new" class="btn btn-primary">Add Product</a></div>';
+                }
+            } catch (err) {
+                container.innerHTML = '<p>Error loading products.</p>';
+            }
+        }
+
+        async function changeStock(id, delta) {
+            try {
+                await RevShop.updateStock(id, delta);
+                loadSellerProducts();
+            } catch (e) { RevShop.showToast(e.message, 'danger'); }
+        }
+
+        async function handleDelete(id) {
+            if (!confirm('Delete this product?')) return;
+            try {
+                await RevShop.deleteProduct(id);
+                RevShop.showToast('Deleted!', 'success');
+                loadSellerProducts();
+            } catch (e) { RevShop.showToast(e.message, 'danger'); }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadSellerProducts);
+    </script>
+</body>
+
+</html>

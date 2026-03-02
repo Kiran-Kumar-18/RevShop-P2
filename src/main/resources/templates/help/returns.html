@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Returns & Refunds | RevShop Help</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container">
+            <div class="page-header" style="text-align: center; margin-bottom: var(--space-2xl);">
+                <h1>Returns & Refunds</h1>
+                <p>Easy and transparent return policy for your peace of mind</p>
+            </div>
+
+            <div class="card" style="max-width: 800px; margin: 0 auto;">
+                <div class="card-body">
+                    <section style="margin-bottom: var(--space-xl);">
+                        <h2 style="color: var(--primary-light); margin-bottom: var(--space-md);">Return Policy</h2>
+                        <p style="color: var(--text-secondary); line-height: 1.8;">
+                            At RevShop, we want you to be completely satisfied with your purchase. If you're not happy
+                            with an item, you can return most products within <strong>14 days</strong> of delivery.
+                        </p>
+                        <ul
+                            style="color: var(--text-secondary); padding-left: var(--space-lg); margin-top: var(--space-sm); line-height: 1.8;">
+                            <li>Items must be in original condition and packaging.</li>
+                            <li>All tags, manuals, and accessories must be included.</li>
+                            <li>Personalized or digital items are not eligible for return.</li>
+                        </ul>
+                    </section>
+
+                    <section style="margin-bottom: var(--space-xl);">
+                        <h2 style="color: var(--primary-light); margin-bottom: var(--space-md);">Refund Process</h2>
+                        <p style="color: var(--text-secondary); line-height: 1.8;">
+                            Once we receive and inspect your return, we will process your refund within <strong>5-7
+                                business days</strong>. The refund will be credited back to your original payment
+                            method.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2 style="color: var(--primary-light); margin-bottom: var(--space-md);">How to Initiate a
+                            Return</h2>
+                        <p style="color: var(--text-secondary); line-height: 1.8;">
+                            To start a return, go to your <strong>Orders</strong> page, find the relevant order, and
+                            click the "Request Return" button next to the item. Follow the on-screen instructions to
+                            print your return label.
+                        </p>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+</body>
+
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Home | RevShop</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <!-- Simple Hero Section -->
+        <!-- Hero Carousel Section -->
+        <section class="hero-carousel">
+            <div class="carousel-track" id="carousel-track">
+                <div class="carousel-slide">
+                    <img th:src="@{/images/carousel/product_showcase.png}" alt="All Products Showcase">
+                </div>
+                <div class="carousel-slide">
+                    <img th:src="@{/images/carousel/best_price.png}" alt="Best Shopping Offers">
+                </div>
+                <div class="carousel-slide">
+                    <img th:src="@{/images/slide2.png}" alt="Featured Tech New Arrivals">
+                </div>
+                <div class="carousel-slide">
+                    <img th:src="@{/images/carousel/festive_sale.png}" alt="Festive Sale Discounts">
+                </div>
+                <div class="carousel-slide">
+                    <img th:src="@{/images/carousel/family_shopping.png}" alt="Family Shopping Deals">
+                </div>
+            </div>
+
+            <!-- Overlay Content (Fixed over all slides) -->
+            <div class="hero-overlay">
+                <div class="container">
+                    <h1>Welcome to RevShop</h1>
+                    <p>Find the best deals on thousands of quality products from verified sellers. Simple shopping,
+                        secure checkout.</p>
+                    <div class="hero-actions">
+                        <a th:href="@{/products}" class="btn btn-primary btn-lg">Shop Now</a>
+                        <a th:href="@{/register}" class="btn btn-outline btn-lg">Join Us</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carousel Pagination Dots -->
+            <div class="carousel-dots" id="carousel-dots">
+                <div class="dot active" data-index="0"></div>
+                <div class="dot" data-index="1"></div>
+                <div class="dot" data-index="2"></div>
+                <div class="dot" data-index="3"></div>
+                <div class="dot" data-index="4"></div>
+            </div>
+        </section>
+
+        <!-- Featured Products -->
+        <section class="container mb-4">
+            <div class="section-header">
+                <h2>Featured Products</h2>
+                <a th:href="@{/products}">View All →</a>
+            </div>
+
+            <div th:if="${products != null and products.hasContent()}" class="products-grid">
+                <div th:each="product : ${products.content}" class="product-card">
+                    <a th:href="@{'/products/' + ${product.productId}}" style="text-decoration:none;color:inherit;">
+                        <div class="product-image">
+                            <img th:src="${product.imageUrl}" alt="Product Image">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-category" th:text="${product.categoryName}">Category</div>
+                            <h3 class="product-name" th:text="${product.name}">Product Name</h3>
+                            <div class="product-pricing">
+                                <span class="product-price"
+                                    th:text="'₹' + ${#numbers.formatDecimal(product.price, 1, 2)}">₹0.00</span>
+                                <span th:if="${product.mrp != null}" class="product-mrp"
+                                    th:text="'₹' + ${#numbers.formatDecimal(product.mrp, 1, 2)}">₹0.00</span>
+                            </div>
+                            <div class="product-seller" th:text="'By ' + ${product.sellerBusinessName}">By Seller</div>
+                            <div class="product-stats">
+                                <span class="rating-star"
+                                    th:title="'Average Rating (' + ${product.averageRating} + ')'">
+                                    ⭐ <span
+                                        th:text="${product.averageRating != null ? #numbers.formatDecimal(product.averageRating, 1, 1) : '0.0'}">0.0</span>
+                                </span>
+                                <span class="stat-divider">|</span>
+                                <span class="sold-count"
+                                    th:text="${(product.soldCount != null ? product.soldCount : 0) + ' sold'}">0
+                                    sold</span>
+                                <span class="stat-divider">|</span>
+                                <span class="stock-tag"
+                                    th:classappend="${product.stockQuantity == 0} ? 'text-danger' : (${product.stockQuantity < 5} ? 'text-warning' : '')"
+                                    th:text="${product.stockQuantity == 0} ? 'No Stock Available' : ${product.stockQuantity} + ' left'">10
+                                    left</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div th:if="${products == null or !products.hasContent()}" class="text-center" style="padding: 50px;">
+                <h3>No products available yet.</h3>
+                <p>Check back later!</p>
+            </div>
+        </section>
+
+        <!-- Home Page Features -->
+        <section class="container mt-4">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <img th:src="@{/images/cod.png}" alt="Cash on Delivery" class="feature-icon-img">
+                    <h3 class="feature-title">Cash on Delivery</h3>
+                    <p class="feature-desc">Pay safely at your doorstep upon delivery. Supports cash and digital
+                        payments.</p>
+                </div>
+                <div class="feature-card">
+                    <img th:src="@{/images/shipping.png}" alt="Free Shipping" class="feature-icon-img">
+                    <h3 class="feature-title">Free Shipping</h3>
+                    <p class="feature-desc">Free shipping on all orders above ₹500. Fast and reliable delivery.</p>
+                </div>
+                <div class="feature-card">
+                    <img th:src="@{/images/support.png}" alt="24/7 Support" class="feature-icon-img">
+                    <h3 class="feature-title">24/7 Support</h3>
+                    <p class="feature-desc">Help anytime, anywhere. Our support team is just a call away.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const track = document.getElementById('carousel-track');
+            const dots = document.querySelectorAll('.dot');
+            let currentIndex = 0;
+            const slideCount = dots.length; // Use dynamically to avoid manual hardcoding
+
+            function updateCarousel(index) {
+                track.style.transform = `translateX(-${index * (100 / slideCount)}%)`;
+                dots.forEach(dot => dot.classList.remove('active'));
+                dots[index].classList.add('active');
+            }
+
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % slideCount;
+                updateCarousel(currentIndex);
+            }
+
+            // Automatic slide every 5 seconds
+            let slideInterval = setInterval(nextSlide, 5000);
+
+            // Manual dot selection
+            dots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    clearInterval(slideInterval);
+                    currentIndex = parseInt(dot.getAttribute('data-index'));
+                    updateCarousel(currentIndex);
+                    slideInterval = setInterval(nextSlide, 5000);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

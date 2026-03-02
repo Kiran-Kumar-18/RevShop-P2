@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Sign In | RevShop</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img th:src="@{/images/logo.png}" alt="RevShop Logo" class="auth-logo-img">
+                <h1>Welcome Back</h1>
+                <p>Sign in to your RevShop account</p>
+            </div>
+
+            <div th:if="${param.error}" class="alert alert-danger">
+                Invalid email or password.
+            </div>
+            <div th:if="${param.registered}" class="alert alert-success">
+                Registration successful! Please sign in.
+            </div>
+            <div th:if="${param.reset}" class="alert alert-success">
+                Password reset successfully! Please sign in with your new password.
+            </div>
+            <div th:if="${param.logout}" class="alert alert-info">
+                You have been signed out.
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Email Address</label>
+                    <input type="email" id="username" name="username" class="form-control" placeholder="you@example.com"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control"
+                        placeholder="Enter your password" required>
+                </div>
+                <div class="mb-4" style="text-align: right;">
+                    <a th:href="@{/forgot-password}">Forgot password?</a>
+                </div>
+                <button type="submit" id="login-submit-btn" class="btn btn-primary btn-block btn-lg">Sign In</button>
+            </form>
+
+            <p class="text-center mt-4">
+                Don't have an account? <a th:href="@{/register}">Create one</a>
+            </p>
+        </div>
+    </div>
+
+    <script th:src="@{/js/app.js}"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('login-submit-btn');
+
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+
+            try {
+                const res = await RevShop.login(email, password);
+                if (res.success) {
+                    const user = RevShop.getUserInfo();
+                    const redirectUrl = (user && user.role === 'ROLE_SELLER') ? '/seller/dashboard' : '/';
+                    RevShop.showSuccess('Login Successful!', redirectUrl);
+                } else {
+                    alert(res.message || 'Invalid email or password');
+                    btn.disabled = false;
+                    btn.textContent = 'Sign In';
+                }
+            } catch (err) {
+                alert(err.message || 'An error occurred during login');
+                btn.disabled = false;
+                btn.textContent = 'Sign In';
+            }
+        });
+    </script>
+
+</body>
+
+</html>

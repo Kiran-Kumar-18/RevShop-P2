@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title th:text="${product.name + ' | RevShop'}">Product | RevShop</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+    <style>
+        .product-detail-flex {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .detail-img {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 400px;
+        }
+
+        .detail-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #fff;
+        }
+
+        .detail-text {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .product-detail-flex {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container">
+            <div class="mb-4">
+                <a th:href="@{/products}">← Back to Products</a>
+            </div>
+
+            <div class="product-detail-flex">
+                <div class="detail-img">
+                    <img th:src="${product.imageUrl}" alt="Product Image">
+                </div>
+
+                <div class="detail-text">
+                    <div style="color: #888; text-transform: uppercase; font-size: 12px; margin-bottom: 10px;"
+                        th:text="${product.categoryName}">Category</div>
+                    <h1 th:text="${product.name}">Product Name</h1>
+                    <p style="color: #666; margin-bottom: 20px;">By <span th:text="${product.sellerBusinessName}"
+                            style="font-weight: bold;">Seller</span></p>
+
+                    <div style="margin-bottom: 20px;">
+                        <span style="font-size: 32px; font-weight: bold; color: #007bff;"
+                            th:text="'₹' + ${#numbers.formatDecimal(product.price, 1, 2)}">₹0.00</span>
+                        <span th:if="${product.mrp != null}"
+                            style="text-decoration: line-through; color: #999; margin-left: 15px;"
+                            th:text="'₹' + ${#numbers.formatDecimal(product.mrp, 1, 2)}">₹0.00</span>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <span th:if="${product.stockQuantity > 0}" style="color: #28a745; font-weight: bold;">✔
+                            [[${product.stockQuantity}]] In Stock</span>
+                        <span th:unless="${product.stockQuantity > 0}" style="color: #dc3545; font-weight: bold;">✖ Out
+                            of Stock</span>
+                        <span style="margin: 0 10px; color: #ddd;">|</span>
+                        <span style="color: #666; font-size: 14px;">[[${product.soldCount}]] items sold</span>
+                        <span style="margin: 0 10px; color: #ddd;">|</span>
+                        <span class="rating-star" th:title="'Average Rating (' + ${product.averageRating} + ')'"
+                            style="font-size: 14px;">
+                            ⭐ <span
+                                th:text="${product.averageRating != null ? #numbers.formatDecimal(product.averageRating, 1, 1) : '0.0'}">0.0</span>
+                        </span>
+                    </div>
+
+                    <p style="margin-bottom: 30px;" th:text="${product.description}">Description...</p>
+
+                    <div class="buyer-action">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                            <label for="quantity" style="margin: 0; font-weight: 500;">Quantity:</label>
+                            <input type="number" id="quantity" value="1" min="1" th:max="${product.stockQuantity}"
+                                class="form-control" style="width: 80px;" th:disabled="${product.stockQuantity == 0}">
+                        </div>
+
+                        <div style="display: flex; gap: 12px; align-items: stretch;">
+                            <div th:if="${product.stockQuantity > 0}" style="flex: 1;">
+                                <button class="btn btn-primary btn-lg btn-block" onclick="handleAddToCart()"
+                                    style="height: 100%; margin: 0; white-space: nowrap;">Add to Cart</button>
+                            </div>
+                            <div th:if="${product.stockQuantity == 0}" style="flex: 1;">
+                                <button class="btn btn-secondary btn-lg btn-block" disabled
+                                    style="background-color: #ccc; border-color: #ccc; cursor: not-allowed; height: 100%; margin: 0; white-space: nowrap;">Out
+                                    of Stock</button>
+                            </div>
+                            <div style="flex: 1;">
+                                <button class="btn btn-outline btn-lg btn-block" onclick="handleAddFavorite()"
+                                    style="height: 100%; margin: 0; white-space: nowrap;">♥ Favorite</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simple Review Section -->
+            <section class="mt-4" style="border-top: 1px solid #eee; padding-top: 30px;">
+                <h2>Customer Reviews</h2>
+                <div id="reviews-list" class="mt-4">
+                    <!-- Loaded via JS -->
+                    <p>Loading reviews...</p>
+                </div>
+
+                <div id="add-review-section" class="mt-4 buyer-action"
+                    style="display:none; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                    <h3>Submit a Review</h3>
+                    <div class="form-group">
+                        <label>Rating (1-5)</label>
+                        <select id="review-rating" class="form-control" style="width: 100px;">
+                            <option value="5">5 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="2">2 Stars</option>
+                            <option value="1">1 Star</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="review-text">Your Comments</label>
+                        <textarea id="review-text" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="submitReview()">Submit</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+
+    <script th:inline="javascript">
+        const productId = /*[[${product.productId}]]*/ 0;
+
+        function handleAddToCart() {
+            const user = RevShop.getUserInfo();
+            if (!user) { window.location.href = '/login'; return; }
+            const qty = parseInt(document.getElementById('quantity').value);
+            RevShop.addToCart(user.userId, productId, qty)
+                .then(() => {
+                    RevShop.showToast('Added to cart!', 'success');
+                    updateNavbar();
+                })
+                .catch(err => RevShop.showToast(err.message, 'danger'));
+        }
+
+        function handleAddFavorite() {
+            const user = RevShop.getUserInfo();
+            if (!user) { window.location.href = '/login'; return; }
+            RevShop.addFavorite(user.userId, productId)
+                .then(() => RevShop.showToast('Added to favorites!', 'success'))
+                .catch(err => RevShop.showToast(err.message, 'danger'));
+        }
+
+        async function loadReviews() {
+            const container = document.getElementById('reviews-list');
+            try {
+                const res = await RevShop.apiFetch(`/reviews/product/${productId}`);
+                if (res.success && res.data && res.data.content && res.data.content.length > 0) {
+                    container.innerHTML = res.data.content.map(r => `
+                        <div style="border-bottom: 1px solid #eee; padding: 15px 0;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <strong>${r.userName || 'Customer'}</strong>
+                                <span style="color: #f39c12;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+                            </div>
+                            <p>${r.reviewText || ''}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p>No reviews yet. Be the first!</p>';
+                }
+            } catch (err) {
+                container.innerHTML = '<p>Could not load reviews.</p>';
+            }
+        }
+
+        async function submitReview() {
+            const user = RevShop.getUserInfo();
+            if (!user) { window.location.href = '/login'; return; }
+            const rating = parseInt(document.getElementById('review-rating').value);
+            const reviewText = document.getElementById('review-text').value;
+
+            try {
+                await RevShop.apiFetch('/reviews', {
+                    method: 'POST',
+                    body: JSON.stringify({ userId: user.userId, productId, rating, reviewText })
+                });
+                RevShop.showToast('Review submitted!', 'success');
+                document.getElementById('review-text').value = '';
+                loadReviews();
+            } catch (err) {
+                RevShop.showToast(err.message, 'danger');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadReviews();
+            const user = RevShop.getUserInfo();
+            if (RevShop.isLoggedIn() && user && user.role === 'ROLE_BUYER') {
+                document.getElementById('add-review-section').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

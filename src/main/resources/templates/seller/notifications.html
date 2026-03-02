@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Notifications | RevShop Seller</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container" style="max-width:800px;">
+            <div class="page-header">
+                <div class="breadcrumb">
+                    <a th:href="@{/seller/dashboard}">Dashboard</a>
+                    <span class="separator">/</span>
+                    <span>Notifications</span>
+                </div>
+                <h1>🔔 Notifications</h1>
+                <p>Stay updated on your store activity</p>
+            </div>
+
+            <div id="notifications-list">
+                <div class="loading-overlay">
+                    <div class="spinner"></div>
+                    <span>Loading notifications...</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+
+    <script>
+        async function loadNotifications() {
+            const user = RevShop.getUserInfo();
+            if (!user) { window.location.href = '/login'; return; }
+
+            const container = document.getElementById('notifications-list');
+
+            try {
+                const res = await RevShop.getUserNotifications(user.userId);
+                if (res.success && res.data && res.data.length > 0) {
+                    container.innerHTML = res.data.map(n => `
+          <div class="notification-card ${!n.isRead ? 'unread' : ''} fade-in" id="notif-${n.notificationId}">
+            <div class="notif-icon">
+              ${n.type === 'ORDER' ? '📋' : n.type === 'STOCK' ? '📦' : '🔔'}
+            </div>
+            <div class="notif-content">
+              <div class="notif-title">${n.title || 'Notification'}</div>
+              <div class="notif-message">${n.message || ''}</div>
+              <div class="notif-time">${RevShop.formatDateTime(n.createdAt)}</div>
+            </div>
+            ${!n.isRead ? `<button class="btn btn-secondary btn-sm" onclick="markRead(${n.notificationId})">Mark Read</button>` : ''}
+          </div>
+        `).join('');
+                } else {
+                    container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🔔</div>
+            <h3>No notifications</h3>
+            <p>You're all caught up!</p>
+          </div>`;
+                }
+            } catch (err) {
+                container.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:var(--space-xl);">Could not load notifications.</p>';
+            }
+        }
+
+        async function markRead(notificationId) {
+            try {
+                await RevShop.markNotificationRead(notificationId);
+                const card = document.getElementById(`notif-${notificationId}`);
+                if (card) {
+                    card.classList.remove('unread');
+                    const btn = card.querySelector('.btn');
+                    if (btn) btn.remove();
+                }
+                RevShop.showToast('Marked as read', 'info');
+            } catch (err) {
+                RevShop.showToast(err.message, 'danger');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadNotifications);
+    </script>
+</body>
+
+</html>

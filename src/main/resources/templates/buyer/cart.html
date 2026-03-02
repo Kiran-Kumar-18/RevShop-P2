@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Shopping Cart | RevShop</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+    <style>
+        .cart-layout {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .cart-items {
+            flex: 2;
+        }
+
+        .cart-summary {
+            flex: 1;
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 20px;
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .cart-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .cart-layout {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container">
+            <div class="section-header">
+                <h1>Shopping Cart</h1>
+            </div>
+
+            <div class="cart-layout">
+                <div id="cart-items" class="cart-items">
+                    <p>Loading your items...</p>
+                </div>
+
+                <div id="cart-summary-box" class="cart-summary" style="display:none;">
+                    <h3>Order Summary</h3>
+                    <div style="display: flex; justify-content: space-between; margin: 20px 0; font-size: 18px;">
+                        <span>Subtotal</span>
+                        <strong id="cart-total-amount">₹0.00</strong>
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 25px;">
+                        <a th:href="@{/checkout}" class="btn btn-primary"
+                            style="flex: 1; padding: 12px; font-size: 16px;">Checkout</a>
+                        <button class="btn btn-outline" style="flex: 1; padding: 12px; font-size: 16px;"
+                            onclick="handleClearCart()">Clear Cart</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+
+    <script>
+        async function loadCart() {
+            const user = RevShop.getUserInfo();
+            if (!user) { window.location.href = '/login'; return; }
+
+            const container = document.getElementById('cart-items');
+            const summaryBox = document.getElementById('cart-summary-box');
+
+            try {
+                const res = await RevShop.getCart(user.userId);
+                if (res.success && res.data && res.data.items && res.data.items.length > 0) {
+                    summaryBox.style.display = 'block';
+                    document.getElementById('cart-total-amount').textContent = RevShop.formatCurrency(res.data.totalAmount);
+
+                    container.innerHTML = res.data.items.map(item => `
+                        <div class="cart-item">
+                            <img src="${item.productImageUrl}" alt="${item.productName}" class="cart-img">
+                            <div style="flex:1">
+                                <div style="font-weight:bold; font-size:18px;">${item.productName}</div>
+                                <div style="color:#666; margin: 5px 0;">Qty: ${item.quantity} x ${RevShop.formatCurrency(item.price)}</div>
+                                <div style="color:#007bff; font-weight:bold;">Total: ${RevShop.formatCurrency(item.itemTotal)}</div>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-danger" onclick="removeItem(${item.cartItemId})">Remove</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    summaryBox.style.display = 'none';
+                    container.innerHTML = '<div class="text-center" style="padding:40px;"><h3>Your cart is empty.</h3><a href="/products" class="btn btn-primary">Go Shopping</a></div>';
+                }
+            } catch (err) {
+                container.innerHTML = '<p>Error loading cart items.</p>';
+            }
+        }
+
+        async function removeItem(itemId) {
+            const user = RevShop.getUserInfo();
+            try {
+                await RevShop.removeFromCart(user.userId, itemId);
+                RevShop.showToast('Removed!', 'info');
+                loadCart();
+                updateNavbar();
+            } catch (e) { RevShop.showToast('Failed to remove', 'danger'); }
+        }
+
+        async function handleClearCart() {
+            const user = RevShop.getUserInfo();
+            try {
+                await RevShop.apiFetch(`/cart/${user.userId}/clear`, { method: 'DELETE' });
+                RevShop.showToast('Cart cleared', 'info');
+                loadCart();
+                updateNavbar();
+            } catch (e) { RevShop.showToast('Failed to clear', 'danger'); }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCart);
+    </script>
+</body>
+
+</html>

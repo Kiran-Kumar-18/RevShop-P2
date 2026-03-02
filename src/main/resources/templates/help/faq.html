@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Frequently Asked Questions | RevShop Help</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container">
+            <div class="page-header" style="text-align: center; margin-bottom: var(--space-2xl);">
+                <h1>Frequently Asked Questions</h1>
+                <p>Find answers to common questions about shopping on RevShop</p>
+            </div>
+
+            <div class="help-section" style="max-width: 800px; margin: 0 auto;">
+                <div class="card" style="margin-bottom: var(--space-lg);">
+                    <div class="card-body">
+                        <h3 style="color: var(--primary-light); margin-bottom: var(--space-sm);">How do I track my
+                            order?</h3>
+                        <p style="color: var(--text-secondary);">You can track your order by navigating to the "Orders"
+                            section in your account. Each order level provides real-time status updates from processing
+                            to delivery.</p>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: var(--space-lg);">
+                    <div class="card-body">
+                        <h3 style="color: var(--primary-light); margin-bottom: var(--space-sm);">What payment methods do
+                            you accept?</h3>
+                        <p style="color: var(--text-secondary);">We accept all major credit/debit cards, net banking,
+                            and popular digital wallets. All transactions are secured with industry-standard encryption.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: var(--space-lg);">
+                    <div class="card-body">
+                        <h3 style="color: var(--primary-light); margin-bottom: var(--space-sm);">How can I contact a
+                            seller?</h3>
+                        <p style="color: var(--text-secondary);">On every product detail page, you can see the seller's
+                            business name. If you have specific questions about a product, you can use our upcoming
+                            direct messaging feature or contact our support team to facilitate communication.</p>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: var(--space-lg);">
+                    <div class="card-body">
+                        <h3 style="color: var(--primary-light); margin-bottom: var(--space-sm);">Is my data secure?</h3>
+                        <p style="color: var(--text-secondary);">Yes, RevShop uses advanced security protocols and
+                            JWT-based authentication to ensure that your personal information and transaction data
+                            remain private and protected.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+</body>
+
+</html>

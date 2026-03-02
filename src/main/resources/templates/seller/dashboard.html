@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Seller Dashboard | RevShop</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h1>Seller Dashboard</h1>
+                    <p id="seller-welcome">Welcome back!</p>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="dashboard-stats" id="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-value" id="stat-products">–</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-value" id="stat-orders">–</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-value" id="stat-revenue">–</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔔</div>
+                    <div class="stat-value" id="stat-notifications">–</div>
+                    <div class="stat-label">Unread Notifications</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="section-header">
+                <h2>Quick Actions</h2>
+            </div>
+            <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom: 40px;">
+                <a th:href="@{/seller/products/new}" class="btn btn-primary">+ Add New Product</a>
+                <a th:href="@{/seller/products}" class="btn btn-secondary">Manage Products</a>
+                <a th:href="@{/seller/orders}" class="btn btn-secondary">View Orders</a>
+            </div>
+
+            <!-- Recent Products -->
+            <div class="section-header">
+                <h2>Your Products</h2>
+                <a th:href="@{/seller/products}">View All →</a>
+            </div>
+            <div id="recent-products" class="table-responsive">
+                <p>Loading products...</p>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+
+    <script>
+        async function loadDashboard() {
+            const user = RevShop.getUserInfo();
+            if (!user || user.role !== 'ROLE_SELLER') {
+                window.location.href = '/login'; return;
+            }
+
+            document.getElementById('seller-welcome').textContent = `Welcome back, ${user.name}!`;
+
+            try {
+                // Products
+                const prodRes = await RevShop.getSellerProducts(user.userId);
+                if (prodRes.success && prodRes.data) {
+                    const allProducts = prodRes.data;
+                    document.getElementById('stat-products').textContent = allProducts.length;
+
+                    const container = document.getElementById('recent-products');
+                    if (allProducts.length > 0) {
+                        const recentProducts = allProducts.slice(0, 5);
+                        container.innerHTML = `
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${recentProducts.map(p => `
+                                        <tr>
+                                            <td><strong>${p.name}</strong></td>
+                                            <td>${RevShop.formatCurrency(p.price)}</td>
+                                            <td>${p.stockQuantity}</td>
+                                            <td>${p.isActive ? '<span class="status-badge delivered">Active</span>' : '<span class="status-badge cancelled">Inactive</span>'}</td>
+                                            <td><a href="/seller/products/edit/${p.productId}" class="btn btn-secondary btn-sm">Edit</a></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>`;
+                    } else {
+                        container.innerHTML = '<div class="text-center" style="padding:40px;"><h3>No products yet.</h3><a href="/seller/products/new" class="btn btn-primary">Add Your First Product</a></div>';
+                    }
+                }
+
+                // Notifications
+                const notifRes = await RevShop.getUserNotifications(user.userId);
+                if (notifRes.success && notifRes.data) {
+                    const unread = notifRes.data.filter(n => !n.isRead).length;
+                    document.getElementById('stat-notifications').textContent = unread;
+                }
+
+                // Orders
+                const ordersRes = await RevShop.getSellerOrders(user.userId, 0, 1000);
+                if (ordersRes.success && ordersRes.data && ordersRes.data.content) {
+                    const orders = ordersRes.data.content;
+                    document.getElementById('stat-orders').textContent = orders.length;
+                }
+
+                // Seller Detail (Revenue)
+                const sellerRes = await RevShop.getSellerInfo(user.userId);
+                if (sellerRes.success && sellerRes.data) {
+                    const seller = sellerRes.data;
+                    document.getElementById('stat-revenue').textContent = RevShop.formatCurrency(seller.totalRevenue);
+                }
+            } catch (err) {
+                console.error('Dashboard load failed:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+
+</html>

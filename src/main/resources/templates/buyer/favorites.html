@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>My Favorites | RevShop</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container">
+            <div class="page-header">
+                <div class="breadcrumb">
+                    <a th:href="@{/}">Home</a>
+                    <span class="separator">/</span>
+                    <span>Favorites</span>
+                </div>
+                <h1>My Favorites</h1>
+                <p>Products you've saved for later</p>
+            </div>
+
+            <div class="products-grid" id="favorites-list">
+                <div class="loading-overlay" style="grid-column:1/-1;">
+                    <div class="spinner"></div>
+                    <span>Loading favorites...</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+
+    <script>
+        async function loadFavorites() {
+            const user = RevShop.getUserInfo();
+            if (!user) { window.location.href = '/login'; return; }
+
+            const container = document.getElementById('favorites-list');
+
+            try {
+                const res = await RevShop.getUserFavorites(user.userId);
+                if (res.success && res.data && res.data.length > 0) {
+                    const favorites = res.data;
+                    const html = favorites.map(fav => `
+                <div class="product-card fade-in">
+                  <a href="/products/${fav.productId}" style="text-decoration:none;color:inherit;">
+                    <div class="product-image">
+                      <img src="${fav.imageUrl}" alt="${fav.productName}">
+                    </div>
+                    <div class="product-info">
+                      <div class="product-category">${fav.categoryName || ''}</div>
+                      <h3 class="product-name">${fav.productName}</h3>
+                      <div class="product-pricing">
+                        <span class="product-price">${RevShop.formatCurrency(fav.price)}</span>
+                        ${fav.mrp ? '<span class="product-mrp">' + RevShop.formatCurrency(fav.mrp) + '</span>' : ''}
+                      </div>
+                    </div>
+                  </a>
+                  <div style="padding:0 var(--space-lg) var(--space-lg);display:flex;gap:var(--space-sm);margin-top:auto;">
+                    <button class="btn btn-primary btn-sm" style="flex:1;" onclick="addFavToCart(${fav.productId})">Add to Cart</button>
+                    <button class="btn btn-danger btn-sm" onclick="removeFav(${fav.productId})">Remove</button>
+                  </div>
+                </div>`).join('');
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <div class="empty-icon">❤️</div>
+            <h3>No favorites yet</h3>
+            <p>Save products you love by clicking the favorite button!</p>
+            <a href="/products" class="btn btn-primary">Browse Products</a>
+          </div>`;
+                }
+            } catch (err) {
+                container.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:var(--space-xl);grid-column:1/-1;">Could not load favorites.</p>';
+            }
+        }
+
+        async function addFavToCart(productId) {
+            const user = RevShop.getUserInfo();
+            try {
+                await RevShop.addToCart(user.userId, productId, 1);
+                RevShop.showToast('Added to cart!', 'success');
+                updateNavbar();
+            } catch (err) {
+                RevShop.showToast(err.message, 'danger');
+            }
+        }
+
+        async function removeFav(productId) {
+            const user = RevShop.getUserInfo();
+            try {
+                await RevShop.removeFavorite(user.userId, productId);
+                RevShop.showToast('Removed from favorites', 'info');
+                loadFavorites();
+            } catch (err) {
+                RevShop.showToast(err.message, 'danger');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadFavorites);
+    </script>
+</body>
+
+</html>

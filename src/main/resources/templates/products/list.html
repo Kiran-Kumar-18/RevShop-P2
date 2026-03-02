@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Products | RevShop</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+    <style>
+        .filters-container {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-item label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        .filter-item .form-control {
+            height: 38px;
+            font-size: 14px;
+            padding: 0 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .price-inputs {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .price-inputs .form-control {
+            width: 75px;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-actions button,
+        .filter-actions a {
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            font-size: 14px;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+        @media (max-width: 1024px) {
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 20px;
+            }
+
+            .filters-container {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .filter-form {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container">
+            <div class="section-header"
+                style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom:30px;">
+                <div>
+                    <h1 style="margin:0;">All Products</h1>
+                    <p style="margin:5px 0 0; color:#666;">Browse our collection</p>
+                </div>
+
+                <!-- Right-aligned Horizontal Filters -->
+                <div class="filters-container">
+                    <form th:action="@{/products}" method="get" class="filter-form">
+                        <!-- Category -->
+                        <div class="filter-item">
+                            <label>Category</label>
+                            <select name="categoryId" class="form-control" style="width:140px;">
+                                <option value="">All Categories</option>
+                                <option th:each="cat : ${categories}" th:value="${cat.categoryId}" th:text="${cat.name}"
+                                    th:selected="${cat.categoryId == selectedCategoryId}"></option>
+                            </select>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="filter-item">
+                            <label>Price Range</label>
+                            <div class="price-inputs">
+                                <input type="number" name="minPrice" th:value="${minPrice}" class="form-control"
+                                    placeholder="Min">
+                                <span style="color:#ccc;">-</span>
+                                <input type="number" name="maxPrice" th:value="${maxPrice}" class="form-control"
+                                    placeholder="Max">
+                            </div>
+                        </div>
+
+                        <!-- Sort -->
+                        <div class="filter-item">
+                            <label>Sort By</label>
+                            <select name="sort" class="form-control" style="width:140px;">
+                                <option value="select" th:selected="${sort == 'select'}">Select</option>
+                                <option value="productId,desc" th:selected="${sort == 'productId,desc'}">Newest</option>
+                                <option value="price,asc" th:selected="${sort == 'price,asc'}">Price: Low-High</option>
+                                <option value="price,desc" th:selected="${sort == 'price,desc'}">Price: High-Low
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Rating -->
+                        <div class="filter-item">
+                            <label>Rating</label>
+                            <select name="minRating" class="form-control" style="width:120px;">
+                                <option value="">All Ratings</option>
+                                <option value="4.0" th:selected="${minRating == 4.0}">4★ & above</option>
+                                <option value="3.0" th:selected="${minRating == 3.0}">3★ & above</option>
+                                <option value="2.0" th:selected="${minRating == 2.0}">2★ & above</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button type="submit" class="btn btn-primary">Apply</button>
+                            <a th:href="@{/products}" class="btn btn-outline">Reset</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Products Grid (Centered Full Width) -->
+            <div th:if="${products != null and products.hasContent()}" class="products-grid"
+                style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                <div th:each="product : ${products.content}" class="product-card">
+                    <a th:href="@{'/products/' + ${product.productId}}" style="text-decoration:none;color:inherit;">
+                        <div class="product-image">
+                            <img th:src="${product.imageUrl}" alt="Product Image">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-category" th:text="${product.categoryName}">Category</div>
+                            <h3 class="product-name" th:text="${product.name}"
+                                style="font-size: 16px; min-height: 48px; overflow: hidden;">Product Name</h3>
+                            <div class="product-pricing">
+                                <span class="product-price"
+                                    th:text="'₹' + ${#numbers.formatDecimal(product.price, 1, 2)}">₹0.00</span>
+                                <span th:if="${product.mrp != null}" class="product-mrp"
+                                    th:text="'₹' + ${#numbers.formatDecimal(product.mrp, 1, 2)}">₹0.00</span>
+                            </div>
+                            <div class="product-seller" th:text="'By ' + ${product.sellerBusinessName}"
+                                style="font-size: 12px; color: #666; margin-bottom: 8px;">By Seller</div>
+                            <div class="product-stats" style="font-size: 11px;">
+                                <span class="rating-star"
+                                    th:title="'Average Rating (' + ${product.averageRating} + ')'">
+                                    ⭐ <span
+                                        th:text="${product.averageRating != null ? #numbers.formatDecimal(product.averageRating, 1, 1) : '0.0'}">0.0</span>
+                                </span>
+                                <span class="stat-divider">|</span>
+                                <span class="sold-count"
+                                    th:text="${(product.soldCount != null ? product.soldCount : 0) + ' sold'}">0
+                                    sold</span>
+                                <span class="stat-divider">|</span>
+                                <span class="stock-tag"
+                                    th:classappend="${product.stockQuantity == 0} ? 'text-danger' : (${product.stockQuantity < 5} ? 'text-warning' : '')"
+                                    th:text="${product.stockQuantity == 0} ? 'No Stock Available' : ${product.stockQuantity} + ' left'">10
+                                    left</span>
+                            </div>
+
+                            <div class="mt-4">
+                                <button th:if="${product.stockQuantity > 0}"
+                                    class="btn btn-primary btn-sm btn-block buyer-action"
+                                    onclick="event.preventDefault(); addToCartQuick(this)"
+                                    th:data-id="${product.productId}">Add to Cart</button>
+                                <button th:if="${product.stockQuantity == 0}" class="btn btn-secondary btn-sm btn-block"
+                                    disabled
+                                    style="background-color: #ccc; border-color: #ccc; cursor: not-allowed;">Out of
+                                    Stock</button>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div th:if="${products == null or !products.hasContent()}" class="text-center" style="padding: 50px;">
+                <h3>No products found.</h3>
+                <p>Try a different search or category.</p>
+            </div>
+
+            <!-- Pagination -->
+            <div th:if="${products != null and products.totalPages > 1}" class="text-center mt-5">
+                <div style="display: inline-flex; gap: 5px;">
+                    <a th:href="@{/products(page=${products.number - 1}, categoryId=${selectedCategoryId}, keyword=${keyword}, minPrice=${minPrice}, maxPrice=${maxPrice}, minRating=${minRating}, sort=${sort})}"
+                        th:if="${!products.first}" class="btn btn-sm btn-outline">Prev</a>
+                    <span th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}">
+                        <a th:href="@{/products(page=${i}, categoryId=${selectedCategoryId}, keyword=${keyword}, minPrice=${minPrice}, maxPrice=${maxPrice}, minRating=${minRating}, sort=${sort})}"
+                            class="btn btn-sm" th:classappend="${i == products.number} ? 'btn-primary' : 'btn-outline'"
+                            th:text="${i + 1}">1</a>
+                    </span>
+                    <a th:href="@{/products(page=${products.number + 1}, categoryId=${selectedCategoryId}, keyword=${keyword}, minPrice=${minPrice}, maxPrice=${maxPrice}, minRating=${minRating}, sort=${sort})}"
+                        th:if="${!products.last}" class="btn btn-sm btn-outline">Next</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+
+    <script>
+        function addToCartQuick(btn) {
+            const productId = btn.getAttribute('data-id');
+            const user = RevShop.getUserInfo();
+            if (!user) { window.location.href = '/login'; return; }
+            RevShop.addToCart(user.userId, parseInt(productId), 1)
+                .then(() => {
+                    RevShop.showToast('Added to cart!', 'success');
+                    updateNavbar();
+                })
+                .catch(err => RevShop.showToast(err.message, 'danger'));
+        }
+    </script>
+</body>
+
+</html>

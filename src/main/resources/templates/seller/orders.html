@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+  <title>Order Management | RevShop Seller</title>
+  <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+
+  <th:block th:replace="~{fragments/layout :: navbar}" />
+
+  <main class="page-content">
+    <div class="container">
+      <div class="section-header">
+        <h1>Order Management</h1>
+        <p>Manage customer orders</p>
+      </div>
+
+      <div id="seller-orders" class="table-responsive">
+        <p>Loading orders...</p>
+      </div>
+    </div>
+  </main>
+
+  <th:block th:replace="~{fragments/layout :: footer}" />
+  <th:block th:replace="~{fragments/layout :: scripts}" />
+
+  <script>
+    async function loadSellerOrders() {
+      const user = RevShop.getUserInfo();
+      if (!user || user.role !== 'ROLE_SELLER') {
+        window.location.href = '/login'; return;
+      }
+
+      const container = document.getElementById('seller-orders');
+
+      try {
+        const res = await RevShop.getSellerOrders(user.userId, 0, 50);
+        if (res.success && res.data && res.data.content && res.data.content.length > 0) {
+          container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Update Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${res.data.content.map(order => `
+                            <tr>
+                                <td>#${order.orderId}</td>
+                                <td>${new Date(order.orderDate).toLocaleDateString()}</td>
+                                <td><strong>${RevShop.formatCurrency(order.totalAmount)}</strong></td>
+                                <td>${RevShop.getStatusBadge(order.status)}</td>
+                                <td>
+                                    <select onchange="changeStatus(${order.orderId}, this.value)" class="form-control" style="width: 140px; padding: 2px 5px; font-size: 13px;">
+                                        <option value="" disabled selected>Change Status</option>
+                                        <option value="SHIPPED">Shipped</option>
+                                        <option value="DELIVERED">Delivered</option>
+                                        <option value="CANCELLED">Cancelled</option>
+                                    </select>
+                                </td>
+                                <td><a href="/orders/${order.orderId}" class="btn btn-secondary btn-sm">View</a></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } else {
+          container.innerHTML = '<div class="text-center" style="padding:40px;"><h3>No orders yet.</h3></div>';
+        }
+      } catch (err) {
+        container.innerHTML = '<p>Error loading orders.</p>';
+      }
+    }
+
+    async function changeStatus(orderId, status) {
+      if (!confirm('Change status to ' + status + '?')) return;
+      try {
+        await RevShop.updateOrderStatus(orderId, status);
+        RevShop.showToast('Updated!', 'success');
+        loadSellerOrders();
+      } catch (err) {
+        RevShop.showToast(err.message, 'danger');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadSellerOrders);
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+  <title>Order Details | RevShop</title>
+  <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+
+  <th:block th:replace="~{fragments/layout :: navbar}" />
+
+  <main class="page-content">
+    <div class="container">
+      <div class="page-header">
+        <div class="breadcrumb">
+          <a th:href="@{/}">Home</a>
+          <span class="separator">/</span>
+          <a th:href="@{/orders}">My Orders</a>
+          <span class="separator">/</span>
+          <span th:text="'Order #' + ${orderId}">Order #0</span>
+        </div>
+        <h1 th:text="'Order #' + ${orderId}">Order #0</h1>
+      </div>
+
+      <div id="order-detail-content">
+        <div class="loading-overlay">
+          <div class="spinner"></div>
+          <span>Loading order details...</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <th:block th:replace="~{fragments/layout :: footer}" />
+  <th:block th:replace="~{fragments/layout :: scripts}" />
+
+  <script th:inline="javascript">
+    const orderId = [[${ orderId }]];
+
+    async function loadOrderDetail() {
+      const container = document.getElementById('order-detail-content');
+      const user = RevShop.getUserInfo();
+
+      try {
+        const res = await RevShop.getOrder(orderId);
+        if (res.success && res.data) {
+          const order = res.data;
+
+          // Try to load payment info
+          let paymentHtml = '';
+          try {
+            const payRes = await RevShop.apiFetch(`/payments/order/${orderId}`);
+            if (payRes.success && payRes.data) {
+              const p = payRes.data;
+              paymentHtml = `
+                                <div class="checkout-section" style="margin-top:var(--space-lg);">
+                                    <h3>💳 Payment Details</h3>
+                                    <div class="summary-line"><span>Method:</span><span>${p.method}</span></div>
+                                    <div class="summary-line"><span>Amount:</span><span>${RevShop.formatCurrency(p.amount)}</span></div>
+                                    <div class="summary-line"><span>Status:</span><span>${RevShop.getStatusBadge(p.paymentStatus)}</span></div>
+                                    <div class="summary-line"><span>Paid At:</span><span>${RevShop.formatDateTime(p.paidAt)}</span></div>
+                                </div>`;
+            }
+          } catch (e) { /* no payment info */ }
+
+          // Try to load history info
+          let historyHtml = '';
+          try {
+            const histRes = await RevShop.apiFetch(`/orders/${orderId}/history`);
+            if (histRes.success && histRes.data) {
+              historyHtml = `
+                                <div class="checkout-section" style="margin-top:var(--space-lg);">
+                                    <h3>📜 Status History</h3>
+                                    <div class="timeline" style="margin-top:var(--space-md); border-left: 2px solid var(--border-color); padding-left: var(--space-lg); margin-left: 6px;">
+                                        ${histRes.data.map(h => `
+                                            <div class="timeline-item" style="position:relative; margin-bottom:var(--space-lg);">
+                                                <div style="position:absolute; left:-24px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--secondary); border: 2px solid var(--bg-card);"></div>
+                                                <div style="font-weight:600; color:var(--text-white); display:flex; align-items:center; gap:var(--space-md);">
+                                                    ${h.status}
+                                                    <span style="font-size:0.75rem; font-weight:normal; color:var(--text-muted);">${RevShop.formatDateTime(h.updatedAt)}</span>
+                                                </div>
+                                                <div style="font-size:0.85rem; color:var(--text-muted);">Updated by ${h.updatedBy}</div>
+                                                <div style="font-size:0.85rem; color:var(--text-primary); margin-top:4px;">${h.remarks || ''}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>`;
+            }
+          } catch (e) { /* no history info */ }
+
+          const itemsHtml = order.items ? order.items.map(item => `
+                        <div class="cart-item" style="border-bottom: 1px solid var(--border-color); padding: var(--space-md) 0;">
+                            <img src="${item.productImageUrl || '/img/placeholder.png'}" alt="${item.productName}" style="width:60px; height:60px; object-fit:cover; border-radius:var(--radius-sm);">
+                            <div class="item-details" style="flex:1; margin-left:var(--space-md);">
+                                <div class="item-name" style="font-weight:600; color:var(--text-white);">${item.productName}</div>
+                                <div class="item-price" style="font-size:var(--font-size-sm); color:var(--text-muted);">
+                                    ${item.quantity} x ${RevShop.formatCurrency(item.unitPrice)}
+                                </div>
+                            </div>
+                            <div class="item-total" style="font-weight:600; color:var(--secondary);">
+                                ${RevShop.formatCurrency(item.subtotal)}
+                            </div>
+                        </div>
+                    `).join('') : '<p>No items found.</p>';
+
+          const addressHtml = order.shippingAddress ? `
+                        <div class="checkout-section">
+                            <h3>📍 Shipping Address</h3>
+                            <div style="color:var(--text-primary); font-size:var(--font-size-sm);">
+                                <strong>${order.shippingAddress.fullName}</strong><br>
+                                ${order.shippingAddress.addressLine1}${order.shippingAddress.addressLine2 ? ', ' + order.shippingAddress.addressLine2 : ''}<br>
+                                ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.postalCode}<br>
+                                ${order.shippingAddress.country}<br>
+                                <span style="display:inline-block; margin-top:4px;">📞 ${order.shippingAddress.phone}</span>
+                            </div>
+                        </div>
+                    ` : '';
+
+          container.innerHTML = `
+                        <div class="checkout-layout" style="padding-top:0; display:grid; grid-template-columns: 2fr 1fr; gap: var(--space-xl);">
+                            <div class="detail-main">
+                                <div class="checkout-section">
+                                    <h3>🛒 Order Items</h3>
+                                    <div class="order-items-list">${itemsHtml}</div>
+                                </div>
+                                ${addressHtml}
+                                ${paymentHtml}
+                                ${historyHtml}
+                            </div>
+                            <div class="detail-sidebar">
+                                <div class="order-summary" style="position:sticky; top:20px;">
+                                    <h3>📋 Order Summary</h3>
+                                    <div class="summary-line"><span>Order ID:</span><span style="color:var(--text-white);font-weight:600;">#${order.orderId}</span></div>
+                                    <div class="summary-line"><span>Customer:</span><span>${order.userName}</span></div>
+                                    <div class="summary-line"><span>Date:</span><span>${RevShop.formatDateTime(order.orderDate)}</span></div>
+                                    <div class="summary-line"><span>Status:</span><span>${RevShop.getStatusBadge(order.status)}</span></div>
+                                    <hr style="border:0; border-top:1px solid var(--border-color); margin:var(--space-md) 0;">
+                                    <div class="summary-line" style="font-size:var(--font-size-lg); font-weight:700;">
+                                        <span>Total:</span>
+                                        <span style="color:var(--secondary);">${RevShop.formatCurrency(order.totalAmount)}</span>
+                                    </div>
+                                    <a href="${user && user.role === 'ROLE_SELLER' ? '/seller/orders' : '/orders'}" 
+                                       class="btn btn-secondary btn-block" style="margin-top:var(--space-xl);">
+                                       ← Back to ${user && user.role === 'ROLE_SELLER' ? 'Dashboard' : 'My Orders'}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+        } else {
+          container.innerHTML = '<div class="empty-state"><h3>Order not found</h3><a href="/orders" class="btn btn-primary">Back to Orders</a></div>';
+        }
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:var(--space-xl);">Could not load order details.</p>';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadOrderDetail);
+  </script>
+</body>
+
+</html>

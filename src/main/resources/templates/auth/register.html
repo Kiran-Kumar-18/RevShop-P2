@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Create Account | RevShop</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+
+    <div class="auth-page">
+        <div class="auth-card" style="max-width:520px;">
+            <div class="auth-header">
+                <img th:src="@{/images/logo.png}" alt="RevShop Logo" class="auth-logo-img">
+                <h1>Create Account</h1>
+                <p>Join RevShop and start shopping today</p>
+            </div>
+
+            <div id="register-error" class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+            <div id="register-success" class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+
+            <form id="register-form" th:object="${registerDto}" th:action="@{/register}" method="post">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" th:field="*{name}" class="form-control" placeholder="Enter Your Name" required
+                        maxlength="100">
+                    <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"
+                        style="margin-top: 4px; font-size: 0.85em; color: var(--danger);"></div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" th:field="*{email}" class="form-control" placeholder="you@example.com" required>
+                    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"
+                        style="margin-top: 4px; font-size: 0.85em; color: var(--danger);"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" th:field="*{password}" id="password" class="form-control"
+                            placeholder="Create a password" required>
+                        <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger"
+                            style="margin-top: 4px; font-size: 0.85em; color: var(--danger);"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control"
+                            placeholder="Re-enter password" required oninput="checkPasswordMatch()">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" th:field="*{phone}" class="form-control" placeholder="+91 9876543210"
+                            maxlength="20">
+                        <div th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="text-danger"
+                            style="margin-top: 4px; font-size: 0.85em; color: var(--danger);"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Account Type</label>
+                        <select th:field="*{role}" class="form-control" required onchange="toggleSellerFields()">
+                            <option value="">Select type</option>
+                            <option value="ROLE_BUYER">Buyer</option>
+                            <option value="ROLE_SELLER">Seller</option>
+                        </select>
+                        <div th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="text-danger"
+                            style="margin-top: 4px; font-size: 0.85em; color: var(--danger);"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="securityQuestion">Security Question</label>
+                        <select th:field="*{securityQuestion}" class="form-control" required>
+                            <option value="">Select a question</option>
+                            <option value="What was your childhood nickname?">What was your childhood nickname?</option>
+                            <option value="What is the name of your favorite childhood friend?">What is the name of your
+                                favorite childhood friend?</option>
+                            <option value="What city were you born in?">What city were you born in?</option>
+                            <option value="What is your mother's maiden name?">What is your mother's maiden name?
+                            </option>
+                            <option value="What was the color of your first car?">What was the color of your first car?
+                            </option>
+                        </select>
+                        <div th:if="${#fields.hasErrors('securityQuestion')}" th:errors="*{securityQuestion}"
+                            class="text-danger" style="margin-top: 4px; font-size: 0.85em; color: var(--danger);"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="securityAnswer">Security Answer</label>
+                        <input type="text" th:field="*{securityAnswer}" class="form-control" placeholder="Your answer"
+                            required>
+                        <div th:if="${#fields.hasErrors('securityAnswer')}" th:errors="*{securityAnswer}"
+                            class="text-danger" style="margin-top: 4px; font-size: 0.85em; color: var(--danger);"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea th:field="*{address}" class="form-control" placeholder="123 Main St, City, Country"
+                        rows="2"></textarea>
+                    <div th:if="${#fields.hasErrors('address')}" th:errors="*{address}" class="text-danger"
+                        style="margin-top: 4px; font-size: 0.85em; color: var(--danger);"></div>
+                </div>
+
+                <div id="seller-fields" style="display:none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="businessName">Business Name</label>
+                            <input type="text" th:field="*{businessName}" class="form-control"
+                                placeholder="Enter business name">
+                            <div th:if="${#fields.hasErrors('businessName')}" th:errors="*{businessName}"
+                                class="text-danger" style="margin-top: 4px; font-size: 0.85em; color: var(--danger);">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="gstNumber">GST Number</label>
+                            <input type="text" th:field="*{gstNumber}" class="form-control"
+                                placeholder="Optional for now">
+                            <div th:if="${#fields.hasErrors('gstNumber')}" th:errors="*{gstNumber}" class="text-danger"
+                                style="margin-top: 4px; font-size: 0.85em; color: var(--danger);"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-submit-register"
+                    style="margin-top: var(--space-md);">
+                    Create Account
+                </button>
+            </form>
+
+            <p
+                style="text-align:center; margin-top:var(--space-xl); color:var(--text-muted); font-size:var(--font-size-sm);">
+                Already have an account? <a th:href="@{/login}">Sign in</a>
+            </p>
+        </div>
+    </div>
+
+    <script th:src="@{/js/app.js}"></script>
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // Basic validation
+            if (data.password !== data.confirmPassword) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit-register');
+            btn.disabled = true;
+            btn.textContent = 'Creating Account...';
+
+            try {
+                // Remove confirmPassword before sending to API if necessary, 
+                // but our DTO might include it or ignore extra fields.
+                const res = await RevShop.apiFetch('/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+
+                if (res.success) {
+                    RevShop.showSuccess('Registration Successful!', '/login?registered=true');
+                } else {
+                    alert(res.message || 'Registration failed');
+                    btn.disabled = false;
+                    btn.textContent = 'Create Account';
+                }
+            } catch (err) {
+                alert(err.message || 'An error occurred during registration');
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        });
+
+        function toggleSellerFields() {
+            const roleSelect = document.querySelector('select[name="role"]');
+            const sellerFields = document.getElementById('seller-fields');
+            if (roleSelect && roleSelect.value === 'ROLE_SELLER') {
+                sellerFields.style.display = 'block';
+            } else if (sellerFields) {
+                sellerFields.style.display = 'none';
+            }
+        }
+
+        // Run on load to handle validation error states
+        document.addEventListener('DOMContentLoaded', toggleSellerFields);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title th:text="${product != null ? 'Edit Product' : 'New Product'} + ' | RevShop Seller'">Product Form | RevShop
+    </title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container" style="max-width:800px;">
+            <div class="page-header">
+                <div class="breadcrumb">
+                    <a th:href="@{/seller/dashboard}">Dashboard</a>
+                    <span class="separator">/</span>
+                    <a th:href="@{/seller/products}">Products</a>
+                    <span class="separator">/</span>
+                    <span th:text="${product != null ? 'Edit Product' : 'New Product'}">Product Form</span>
+                </div>
+                <h1 th:text="${product != null ? 'Edit Product' : 'Add New Product'}">Product Form</h1>
+            </div>
+
+            <div id="product-form-error" class="alert alert-danger" style="display:none;"></div>
+            <div id="product-form-success" class="alert alert-success" style="display:none;"></div>
+
+            <div class="checkout-section">
+                <form id="product-form" onsubmit="return handleProductSubmit(event)">
+                    <div class="form-group">
+                        <label for="productName">Product Name *</label>
+                        <input type="text" id="productName" class="form-control" placeholder="Enter product name"
+                            th:value="${product != null ? product.name : ''}" required maxlength="150">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productDescription">Description</label>
+                        <textarea id="productDescription" class="form-control" placeholder="Describe your product..."
+                            rows="4" th:text="${product != null ? product.description : ''}"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productImageFile">Product Image Upload</label>
+                        <input type="file" id="productImageFile" class="form-control" accept="image/*">
+                        <small style="color:var(--text-muted); display:block; margin-top:4px;">Upload an image or
+                            provide a URL below.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productImageUrl">Image URL (Optional)</label>
+                        <input type="text" id="productImageUrl" class="form-control"
+                            placeholder="https://example.com/image.jpg"
+                            th:value="${product != null ? product.imageUrl : ''}" maxlength="500">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productPrice">Price (₹) *</label>
+                            <input type="number" step="0.01" id="productPrice" class="form-control" placeholder="0.00"
+                                th:value="${product != null ? product.price : ''}" required min="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="productMrp">MRP (₹)</label>
+                            <input type="number" step="0.01" id="productMrp" class="form-control" placeholder="0.00"
+                                th:value="${product != null ? product.mrp : ''}" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productDiscountPrice">Discount Price (₹)</label>
+                            <input type="number" step="0.01" id="productDiscountPrice" class="form-control"
+                                placeholder="0.00" th:value="${product != null ? product.discountPrice : ''}" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="productCategory">Category *</label>
+                            <select id="productCategory" class="form-control" required>
+                                <option value="">Select category</option>
+                                <th:block th:each="cat : ${categories}">
+                                    <option th:value="${cat.categoryId}" th:text="${cat.name}"
+                                        th:selected="${product != null and product.categoryName == cat.name}">Category
+                                    </option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productStock">Stock Quantity *</label>
+                            <input type="number" id="productStock" class="form-control" placeholder="0"
+                                th:value="${product != null ? product.stockQuantity : ''}" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="productThreshold">Stock Threshold</label>
+                            <input type="number" id="productThreshold" class="form-control" placeholder="e.g. 10"
+                                min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:var(--space-sm);cursor:pointer;">
+                            <input type="checkbox" id="productActive"
+                                th:checked="${product != null ? product.isActive : true}"
+                                style="width:18px;height:18px;">
+                            <span>Product is Active</span>
+                        </label>
+                    </div>
+
+                    <div style="display:flex;gap:15px;align-items:center;">
+                        <button type="submit" class="btn btn-primary btn-lg" id="btn-save-product">
+                            <span th:text="${product != null ? 'Update Product' : 'Create Product'}">Save Product</span>
+                        </button>
+                        <a th:href="@{/seller/products}" class="btn btn-secondary btn-lg">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+
+    <script th:inline="javascript">
+        const existingProduct = /*[[${ product }]]*/ null;
+
+        async function handleProductSubmit(e) {
+            e.preventDefault();
+            const user = RevShop.getUserInfo();
+            if (!user || user.role !== 'ROLE_SELLER') return false;
+
+            const errorDiv = document.getElementById('product-form-error');
+            const successDiv = document.getElementById('product-form-success');
+            const btn = document.getElementById('btn-save-product');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            const fileInput = document.getElementById('productImageFile');
+            let imageUrl = document.getElementById('productImageUrl').value || null;
+
+            btn.textContent = existingProduct ? 'Uploading & Updating...' : 'Uploading & Creating...';
+            btn.disabled = true;
+
+            try {
+                // If a file is selected, upload it first
+                if (fileInput.files.length > 0) {
+                    const uploadRes = await RevShop.uploadImage(fileInput.files[0]);
+                    if (uploadRes.success) {
+                        imageUrl = uploadRes.data; // Use the returned URL
+                    } else {
+                        throw new Error('Image upload failed');
+                    }
+                }
+
+                const data = {
+                    name: document.getElementById('productName').value,
+                    description: document.getElementById('productDescription').value,
+                    price: parseFloat(document.getElementById('productPrice').value),
+                    mrp: document.getElementById('productMrp').value ? parseFloat(document.getElementById('productMrp').value) : null,
+                    discountPrice: document.getElementById('productDiscountPrice').value ? parseFloat(document.getElementById('productDiscountPrice').value) : null,
+                    stockQuantity: parseInt(document.getElementById('productStock').value),
+                    stockThreshold: document.getElementById('productThreshold').value ? parseInt(document.getElementById('productThreshold').value) : null,
+                    categoryId: parseInt(document.getElementById('productCategory').value),
+                    imageUrl: imageUrl,
+                    sellerId: user.userId, // The service should map this to the correct seller
+                    isActive: document.getElementById('productActive').checked
+                };
+
+                let res;
+                if (existingProduct && existingProduct.productId) {
+                    res = await RevShop.updateProduct(existingProduct.productId, data);
+                } else {
+                    res = await RevShop.createProduct(data);
+                }
+
+                if (res.success) {
+                    successDiv.textContent = existingProduct ? 'Product updated successfully!' : 'Product created successfully!';
+                    successDiv.style.display = 'flex';
+                    setTimeout(() => { window.location.href = '/seller/products'; }, 1500);
+                }
+            } catch (err) {
+                errorDiv.textContent = err.message || 'Failed to save product';
+                errorDiv.style.display = 'flex';
+            } finally {
+                btn.textContent = existingProduct ? 'Update Product' : 'Create Product';
+                btn.disabled = false;
+            }
+            return false;
+        }
+    </script>
+</body>
+
+</html>

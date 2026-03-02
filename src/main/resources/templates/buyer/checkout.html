@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Checkout | RevShop</title>
+    <th:block th:replace="~{fragments/layout :: head-common}" />
+    <style>
+        /* Overall Page Reduction */
+        .page-content {
+            padding: 20px 0;
+        }
+
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .checkout-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Section Slimming */
+        .checkout-section,
+        .order-summary {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .checkout-section h3,
+        .order-summary h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        /* Form Elements Size Reduction */
+        .form-control {
+            padding: 8px 12px;
+            font-size: 14px;
+            height: 36px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        /* Payment Buttons Compactness */
+        .payment-methods {
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+        }
+
+        .payment-method {
+            padding: 8px;
+            gap: 4px;
+            aspect-ratio: 1 / 0.65;
+            height: auto;
+        }
+
+        .method-icon {
+            font-size: 18px;
+        }
+
+        .method-label {
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        .selectable-card {
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        /* Order Summary & Primary Button */
+        .summary-row {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .summary-row.total {
+            font-size: 1.1rem;
+            margin-top: 12px;
+            padding-top: 12px;
+        }
+
+        #btn-place-order {
+            padding: 10px 20px;
+            font-size: 14px;
+            width: 160px;
+            margin: 20px auto 0;
+            border-radius: 4px;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+
+        h1 {
+            font-size: 24px;
+        }
+
+        .page-header p {
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments/layout :: navbar}" />
+
+    <main class="page-content">
+        <div class="container">
+            <div class="page-header">
+                <div class="breadcrumb">
+                    <a th:href="@{/}">Home</a>
+                    <span class="separator">/</span>
+                    <a th:href="@{/cart}">Cart</a>
+                    <span class="separator">/</span>
+                    <span>Checkout</span>
+                </div>
+                <h1>Checkout</h1>
+                <p>Complete your order</p>
+            </div>
+
+            <div id="checkout-error" class="alert alert-danger" style="display:none;"></div>
+
+            <div class="checkout-layout">
+                <div>
+                    <!-- Shipping Address -->
+                    <div class="checkout-section">
+                        <h3>📍 Shipping Address</h3>
+                        <div id="shipping-addresses-list" style="margin-bottom:var(--space-lg);">
+                            <div class="loading-overlay" style="padding:var(--space-md) 0;">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                        <details id="new-address-form">
+                            <summary class="btn btn-secondary btn-sm" style="cursor:pointer;">+ Add New Address
+                            </summary>
+                            <div style="margin-top:var(--space-lg);">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="fullName">Full Name</label>
+                                        <input type="text" id="fullName" class="form-control" placeholder="Full name"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="addr-phone">Phone</label>
+                                        <input type="tel" id="addr-phone" class="form-control"
+                                            placeholder="+91 9876543210">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="addressLine1">Address Line 1</label>
+                                    <input type="text" id="addressLine1" class="form-control"
+                                        placeholder="Street address" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="addressLine2">Address Line 2</label>
+                                    <input type="text" id="addressLine2" class="form-control"
+                                        placeholder="Apartment, suite, etc.">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="city">City</label>
+                                        <input type="text" id="city" class="form-control" placeholder="City" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="state">State</label>
+                                        <input type="text" id="state" class="form-control" placeholder="State" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="postalCode">Postal Code</label>
+                                        <input type="text" id="postalCode" class="form-control"
+                                            placeholder="Postal Code" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="country">Country</label>
+                                        <input type="text" id="country" class="form-control" value="India"
+                                            placeholder="Country" required>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" onclick="saveNewAddress()">Save Address</button>
+                            </div>
+                        </details>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="checkout-section">
+                        <h3>💳 Payment Method</h3>
+                        <div class="payment-methods">
+                            <button type="button" class="selectable-card payment-method" data-method="CREDIT_CARD"
+                                onclick="selectPayment(this)">
+                                <div class="method-icon">💳</div>
+                                <div class="method-label">Credit Card</div>
+                            </button>
+                            <button type="button" class="selectable-card payment-method" data-method="DEBIT_CARD"
+                                onclick="selectPayment(this)">
+                                <div class="method-icon">🏧</div>
+                                <div class="method-label">Debit Card</div>
+                            </button>
+                            <button type="button" class="selectable-card payment-method" data-method="UPI"
+                                onclick="selectPayment(this)">
+                                <div class="method-icon">📱</div>
+                                <div class="method-label">UPI</div>
+                            </button>
+                            <button type="button" class="selectable-card payment-method" data-method="COD"
+                                onclick="selectPayment(this)">
+                                <div class="method-icon">💵</div>
+                                <div class="method-label">Cash on Delivery</div>
+                            </button>
+                        </div>
+                        <input type="hidden" id="payment-method" value="">
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div>
+                    <div class="order-summary">
+                        <h3>Order Summary</h3>
+                        <div id="checkout-items">
+                            <div class="loading-overlay" style="padding:var(--space-md) 0;">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                        <div class="summary-row">
+                            <span>Total MRP</span>
+                            <span id="checkout-mrp">₹0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Original Price</span>
+                            <span id="checkout-price-before">₹0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Discount Amount</span>
+                            <span id="checkout-discount" style="color:var(--danger);">−₹0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Shipping</span>
+                            <span style="color:var(--success);">Free</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Final Payable</span>
+                            <span id="checkout-total">₹0.00</span>
+                        </div>
+                        <button class="btn btn-primary" id="btn-place-order" onclick="placeOrder()">
+                            Place Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/layout :: footer}" />
+    <th:block th:replace="~{fragments/layout :: scripts}" />
+
+    <script>
+        let selectedAddressId = null;
+        let cartTotal = 0;
+
+        function selectPayment(el) {
+            document.querySelectorAll('.payment-method').forEach(p => p.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('payment-method').value = el.dataset.method;
+        }
+
+        async function loadCheckoutData(addressIdToSelect = null) {
+            const user = RevShop.getUserInfo();
+            if (!user) { window.location.href = '/login'; return; }
+
+            // Load cart
+            try {
+                const cartRes = await RevShop.getCart(user.userId);
+                if (cartRes.success && cartRes.data && cartRes.data.items && cartRes.data.items.length > 0) {
+                    const cart = cartRes.data;
+                    cartTotal = parseFloat(cart.totalAmount || 0);
+                    document.getElementById('checkout-items').innerHTML = cart.items.map(item => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0;font-size:var(--font-size-sm);">
+            <span style="color:var(--text-secondary);">${item.productName} × ${item.quantity}</span>
+            <span style="color:var(--text-white);font-weight:500;">${RevShop.formatCurrency(item.itemTotal)}</span>
+          </div>
+        `).join('');
+                    if (document.getElementById('checkout-mrp')) document.getElementById('checkout-mrp').textContent = RevShop.formatCurrency(cart.totalMrp || 0);
+                    if (document.getElementById('checkout-price-before')) document.getElementById('checkout-price-before').textContent = RevShop.formatCurrency(cart.totalPriceBeforeDiscount || 0);
+                    if (document.getElementById('checkout-discount')) document.getElementById('checkout-discount').textContent = '−' + RevShop.formatCurrency(cart.totalDiscount || 0);
+                    document.getElementById('checkout-total').textContent = RevShop.formatCurrency(cartTotal);
+                } else {
+                    window.location.href = '/cart';
+                }
+            } catch (err) {
+                RevShop.showToast('Failed to load cart', 'danger');
+            }
+
+            // Load addresses
+            try {
+                const addrRes = await RevShop.getUserAddresses(user.userId);
+                const container = document.getElementById('shipping-addresses-list');
+                container.innerHTML = ''; // Clear existing
+
+                if (addrRes.success && addrRes.data && addrRes.data.length > 0) {
+                    // If we have a specific ID to select (like after saving), use it. 
+                    // Otherwise use the first one if we don't have a selection yet.
+                    if (addressIdToSelect) {
+                        selectedAddressId = parseInt(addressIdToSelect);
+                    } else if (!selectedAddressId || isNaN(selectedAddressId)) {
+                        selectedAddressId = parseInt(addrRes.data[0].addressId);
+                    }
+
+                    container.innerHTML = addrRes.data.map(addr => `
+                        <div class="selectable-card ${selectedAddressId === addr.addressId ? 'selected' : ''}" 
+                             data-addr-id="${addr.addressId}" onclick="selectAddress(this)" style="margin-bottom:10px;">
+                            <strong>${addr.fullName}</strong><br>
+                            <span style="font-size:13px; color:#666;">
+                                ${addr.addressLine1}${addr.addressLine2 ? ', ' + addr.addressLine2 : ''}<br>
+                                ${addr.city}, ${addr.state} ${addr.postalCode}<br>
+                                ${addr.country} | ${addr.phone || ''}
+                            </span>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="color:var(--text-muted);font-size:var(--font-size-sm);">No saved addresses. Please add one below.</p>';
+                }
+            } catch (err) {
+                document.getElementById('shipping-addresses-list').innerHTML = '<p style="color:var(--text-muted);">Could not load addresses.</p>';
+            }
+        }
+
+        function selectAddress(el) {
+            document.querySelectorAll('[data-addr-id]').forEach(a => a.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedAddressId = parseInt(el.dataset.addrId);
+        }
+
+        async function saveNewAddress() {
+            const user = RevShop.getUserInfo();
+            const form = document.getElementById('new-address-form');
+            const data = {
+                fullName: document.getElementById('fullName').value,
+                phone: document.getElementById('addr-phone').value,
+                addressLine1: document.getElementById('addressLine1').value,
+                addressLine2: document.getElementById('addressLine2').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                postalCode: document.getElementById('postalCode').value,
+                country: document.getElementById('country').value,
+                addressType: 'Shipping'
+            };
+
+            // Basic validation
+            if (!data.fullName || !data.addressLine1 || !data.city || !data.postalCode) {
+                RevShop.showToast('Please fill required fields', 'warning');
+                return;
+            }
+
+            try {
+                const res = await RevShop.createAddress(user.userId, data);
+                RevShop.showToast('Address saved!', 'success');
+
+                // 1. Close the form automatically
+                form.removeAttribute('open');
+
+                // 2. Clear inputs
+                form.querySelectorAll('input').forEach(i => i.value = (i.id === 'country' ? 'India' : ''));
+
+                // 3. Refresh list and select the new one
+                if (res.success && res.data) {
+                    loadCheckoutData(res.data.addressId);
+                } else {
+                    loadCheckoutData();
+                }
+            } catch (err) {
+                RevShop.showToast(err.message, 'danger');
+            }
+        }
+
+        async function placeOrder() {
+            const user = RevShop.getUserInfo();
+            const btn = document.getElementById('btn-place-order');
+            const errorDiv = document.getElementById('checkout-error');
+            errorDiv.style.display = 'none';
+
+            if (!selectedAddressId || isNaN(selectedAddressId)) {
+                errorDiv.textContent = 'Please select or add a shipping address';
+                errorDiv.style.display = 'flex';
+                return;
+            }
+
+            const method = document.getElementById('payment-method').value;
+            if (!method) {
+                errorDiv.textContent = 'Please select a payment method';
+                errorDiv.style.display = 'flex';
+                return;
+            }
+
+            btn.textContent = 'Placing order...';
+            btn.disabled = true;
+
+            try {
+                // Place order
+                const orderRes = await RevShop.placeOrder({
+                    userId: parseInt(user.userId),
+                    shippingAddressId: parseInt(selectedAddressId),
+                    billingAddressId: parseInt(selectedAddressId),
+                    paymentMethod: method
+                });
+
+                if (orderRes.success) {
+                    const orderId = orderRes.data.orderId;
+                    const method = document.getElementById('payment-method').value;
+
+                    // Process payment
+                    await RevShop.processPayment({
+                        orderId: parseInt(orderId),
+                        method: method,
+                        amount: parseFloat(cartTotal)
+                    });
+
+                    RevShop.showToast('Order placed successfully!', 'success');
+                    setTimeout(() => { window.location.href = `/orders/${orderId}`; }, 1500);
+                }
+            } catch (err) {
+                errorDiv.textContent = err.message || 'Failed to place order';
+                errorDiv.style.display = 'flex';
+            } finally {
+                btn.textContent = 'Place Order';
+                btn.disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCheckoutData);
+    </script>
+</body>
+
+</html>
