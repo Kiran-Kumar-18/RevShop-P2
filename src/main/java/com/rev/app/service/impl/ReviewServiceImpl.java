@@ -14,9 +14,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Service
 public class ReviewServiceImpl implements IReviewService {
+    private static final Logger logger = LogManager.getLogger(ReviewServiceImpl.class);
     private final IReviewRepository ireviewRepository;
     private final IUserRepository iuserRepository;
     private final IProductRepository iproductRepository;
@@ -41,6 +44,7 @@ public class ReviewServiceImpl implements IReviewService {
             inotificationService.createNotification(product.getSeller().getUser(), title, message, "REVIEW");
         }
         
+        logger.info("Review added: ID: {}, User: {}, Product: {}, Rating: {}", savedReview.getReviewId(), request.getUserId(), request.getProductId(), request.getRating());
         return savedReview;
     }
 
@@ -60,6 +64,7 @@ public class ReviewServiceImpl implements IReviewService {
         }
         
         ireviewRepository.delete(review);
+        logger.info("Review deleted: ID: {} by User ID: {}", reviewId, userId);
     }
 
     @java.lang.SuppressWarnings("all")

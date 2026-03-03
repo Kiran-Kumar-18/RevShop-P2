@@ -10,10 +10,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping("/api/sellers")
 public class SellerController {
+    private static final Logger logger = LogManager.getLogger(SellerController.class);
     private final ISellerService isellerService;
     private final SellerMapper sellerMapper;
     private final ProductMapper productMapper;

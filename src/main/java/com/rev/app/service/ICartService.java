@@ -6,6 +6,7 @@ import com.rev.app.dto.CartResponseDTO;
 public interface ICartService {
     CartResponseDTO getCartByUserId(Integer userId);
     CartResponseDTO addItemToCart(Integer userId, CartRequestDTO request);
+    CartResponseDTO updateItemQuantity(Integer userId, Integer itemId, Integer quantity);
     CartResponseDTO removeItemFromCart(Integer userId, Integer itemId);
     CartResponseDTO clearCart(Integer userId);
 }

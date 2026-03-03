@@ -7,10 +7,13 @@ import com.rev.app.repository.IProductRepository;
 import com.rev.app.repository.ISellerRepository;
 import com.rev.app.service.ISellerService;
 import org.springframework.stereotype.Service;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.util.List;
 
 @Service
 public class SellerServiceImpl implements ISellerService {
+    private static final Logger logger = LogManager.getLogger(SellerServiceImpl.class);
     private final ISellerRepository isellerRepository;
     private final IProductRepository iproductRepository;
 
@@ -22,6 +25,7 @@ public class SellerServiceImpl implements ISellerService {
     @Override
     public List<Product> getSellerProducts(Integer id) {
         Seller seller = isellerRepository.findByUserUserId(id).orElseThrow(() -> new ResourceNotFoundException("Seller not found for user ID: " + id));
+        logger.debug("Fetching products for Seller ID: {}", seller.getSellerId());
         return iproductRepository.findBySellerSellerId(seller.getSellerId());
     }
 

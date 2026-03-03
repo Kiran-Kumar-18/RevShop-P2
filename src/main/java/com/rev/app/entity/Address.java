@@ -84,9 +84,7 @@ public class Address {
         AddressBuilder() {
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder addressId(final Integer addressId) {
@@ -94,9 +92,7 @@ public class Address {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder user(final User user) {
@@ -104,9 +100,7 @@ public class Address {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder fullName(final String fullName) {
@@ -114,9 +108,7 @@ public class Address {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder phone(final String phone) {
@@ -124,9 +116,7 @@ public class Address {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder addressLine1(final String addressLine1) {
@@ -134,9 +124,7 @@ public class Address {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder addressLine2(final String addressLine2) {
@@ -144,9 +132,7 @@ public class Address {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder city(final String city) {
@@ -154,9 +140,6 @@ public class Address {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder state(final String state) {
@@ -164,9 +147,7 @@ public class Address {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder postalCode(final String postalCode) {
@@ -174,9 +155,7 @@ public class Address {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder country(final String country) {
@@ -184,9 +163,6 @@ public class Address {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder addressType(final String addressType) {
@@ -194,9 +170,7 @@ public class Address {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Address.AddressBuilder createdAt(final LocalDateTime createdAt) {

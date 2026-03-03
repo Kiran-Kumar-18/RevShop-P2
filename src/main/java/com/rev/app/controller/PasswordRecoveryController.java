@@ -5,15 +5,19 @@ import com.rev.app.service.IPasswordRecoveryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping(value = "/api/recovery", produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
 public class PasswordRecoveryController {
+    private static final Logger logger = LogManager.getLogger(PasswordRecoveryController.class);
     private final IPasswordRecoveryService ipasswordRecoveryService;
 
     @PostMapping("/initiate")
     public ResponseEntity<ApiResponse<Void>> initiateRecovery(@RequestBody Map<String, String> request) {
         String email = request.get("email");
+        logger.info("Initiating password recovery for email: {}", email);
         ipasswordRecoveryService.initiateRecovery(email);
         return ResponseEntity.ok(ApiResponse.success(null, "Recovery token generated (check logs/email)"));
     }
@@ -22,6 +26,7 @@ public class PasswordRecoveryController {
     public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody Map<String, String> request) {
         String token = request.get("token");
         String newPassword = request.get("newPassword");
+        logger.info("Processing password reset request");
         ipasswordRecoveryService.resetPassword(token, newPassword);
         return ResponseEntity.ok(ApiResponse.success(null, "Password reset successfully"));
     }

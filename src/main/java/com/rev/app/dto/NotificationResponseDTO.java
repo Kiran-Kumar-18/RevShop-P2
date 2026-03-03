@@ -42,9 +42,7 @@ public class NotificationResponseDTO {
         NotificationResponseDTOBuilder() {
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public NotificationResponseDTO.NotificationResponseDTOBuilder notificationId(final Integer notificationId) {

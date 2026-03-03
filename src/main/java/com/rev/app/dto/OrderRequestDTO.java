@@ -9,6 +9,7 @@ public class OrderRequestDTO {
     private Integer shippingAddressId;
     @NotNull(message = "Billing address ID is required")
     private Integer billingAddressId;
+    private String paymentMethod; // e.g. "COD", "ONLINE"
 
 
     @java.lang.SuppressWarnings("all")
@@ -23,6 +24,8 @@ public class OrderRequestDTO {
         @java.lang.SuppressWarnings("all")
         
         private Integer billingAddressId;
+        @java.lang.SuppressWarnings("all")
+        private String paymentMethod;
 
         @java.lang.SuppressWarnings("all")
         
@@ -53,9 +56,15 @@ public class OrderRequestDTO {
         }
 
         @java.lang.SuppressWarnings("all")
+        public OrderRequestDTO.OrderRequestDTOBuilder paymentMethod(final String paymentMethod) {
+            this.paymentMethod = paymentMethod;
+            return this;
+        }
+
+        @java.lang.SuppressWarnings("all")
         
         public OrderRequestDTO build() {
-            return new OrderRequestDTO(this.userId, this.shippingAddressId, this.billingAddressId);
+            return new OrderRequestDTO(this.userId, this.shippingAddressId, this.billingAddressId, this.paymentMethod);
         }
 
         @java.lang.Override
@@ -91,6 +100,11 @@ public class OrderRequestDTO {
     }
 
     @java.lang.SuppressWarnings("all")
+    public String getPaymentMethod() {
+        return this.paymentMethod;
+    }
+
+    @java.lang.SuppressWarnings("all")
     
     public void setUserId(final Integer userId) {
         this.userId = userId;
@@ -106,6 +120,11 @@ public class OrderRequestDTO {
     
     public void setBillingAddressId(final Integer billingAddressId) {
         this.billingAddressId = billingAddressId;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public void setPaymentMethod(final String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     @java.lang.Override
@@ -163,9 +182,10 @@ public class OrderRequestDTO {
 
     @java.lang.SuppressWarnings("all")
     
-    public OrderRequestDTO(final Integer userId, final Integer shippingAddressId, final Integer billingAddressId) {
+    public OrderRequestDTO(final Integer userId, final Integer shippingAddressId, final Integer billingAddressId, final String paymentMethod) {
         this.userId = userId;
         this.shippingAddressId = shippingAddressId;
         this.billingAddressId = billingAddressId;
+        this.paymentMethod = paymentMethod;
     }
 }

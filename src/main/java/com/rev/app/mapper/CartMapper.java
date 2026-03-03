@@ -26,7 +26,6 @@ public class CartMapper {
         BigDecimal unitDiscount = (entity.getProduct() != null && entity.getProduct().getDiscountPrice() != null)
                 ? entity.getProduct().getDiscountPrice().setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         
-        // Final Payable per unit = Original Price - Discount Amount
         BigDecimal finalUnitPrice = originalPrice.subtract(unitDiscount).setScale(2, RoundingMode.HALF_UP);
         
         BigDecimal quantity = BigDecimal.valueOf(entity.getQuantity());

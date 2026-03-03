@@ -11,9 +11,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Service
 public class AuthServiceImpl implements IAuthService {
+    private static final Logger logger = LogManager.getLogger(AuthServiceImpl.class);
     private final IUserRepository iuserRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -23,6 +26,7 @@ public class AuthServiceImpl implements IAuthService {
     @Override
     public void register(RegisterRequestDTO request) {
         if (iuserRepository.findByEmail(request.getEmail()).isPresent()) {
+            logger.warn("Registration failed: Email {} already exists", request.getEmail());
             throw new RuntimeException("Email already exists");
         }
         // Ensure ROLE_ prefix
@@ -33,6 +37,7 @@ public class AuthServiceImpl implements IAuthService {
         
         User user = new User(null, request.getName(), request.getEmail(), passwordEncoder.encode(request.getPassword()), request.getPhone(), role, request.getSecurityQuestion(), request.getSecurityAnswer(), LocalDateTime.now(), null);
         user = iuserRepository.save(user);
+        logger.info("New user registered: {} with role: {}", user.getEmail(), role);
 
         // If the user is a seller, create the corresponding seller entity
         if ("ROLE_SELLER".equals(role)) {
@@ -50,6 +55,7 @@ public class AuthServiceImpl implements IAuthService {
     public String login(LoginRequestDTO request) {
         // Let Spring Security handle authentication
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        logger.info("User logged in successfully: {}", request.getEmail());
         return jwtService.generateToken(request.getEmail());
     }
 
@@ -78,6 +84,7 @@ public class AuthServiceImpl implements IAuthService {
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         iuserRepository.save(user);
+        logger.info("Password reset successfully for user: {}", request.getEmail());
     }
 
     @java.lang.SuppressWarnings("all")

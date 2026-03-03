@@ -9,12 +9,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
 @Service
 public class OrderServiceImpl implements IOrderService {
+    private static final Logger logger = LogManager.getLogger(OrderServiceImpl.class);
     private final IOrderRepository iorderRepository;
     private final IOrderItemRepository iorderItemRepository;
     private final ICartRepository icartRepository;
@@ -24,11 +27,14 @@ public class OrderServiceImpl implements IOrderService {
     private final IAddressRepository iaddressRepository;
     private final INotificationService inotificationService;
     private final IOrderStatusHistoryRepository iorderStatusHistoryRepository;
+    private final ISellerRepository isellerRepository;
+    private final IPaymentRepository ipaymentRepository;
 
     @Override
     @Transactional
     public Order placeOrder(OrderRequestDTO request) {
         if (request.getUserId() == null) {
+            logger.error("Order placement failed: User ID is null");
             throw new com.rev.app.exception.BadRequestException("User ID must not be null");
         }
         if (request.getShippingAddressId() == null) {
@@ -64,6 +70,7 @@ public class OrderServiceImpl implements IOrderService {
         }
         Order order = Order.builder().user(user).shippingAddress(shippingAddress).billingAddress(billingAddress).totalAmount(totalAmount).status("PENDING").build();
         order = iorderRepository.save(order);
+        logger.info("Order placed successfully. Order ID: {}, User: {}, Total: {}", order.getOrderId(), user.getEmail(), totalAmount);
         java.util.Set<User> sellersToNotify = new java.util.HashSet<>();
         for (CartItem item : cartItems) {
             Product product = item.getProduct();
@@ -110,6 +117,17 @@ public class OrderServiceImpl implements IOrderService {
                 .remarks("Order placed by customer")
                 .build());
 
+        // Handle Payment record for COD
+        if ("COD".equalsIgnoreCase(request.getPaymentMethod())) {
+            Payment codPayment = Payment.builder()
+                .order(order)
+                .method("COD")
+                .amount(totalAmount)
+                .paymentStatus("PENDING")
+                .build();
+            ipaymentRepository.save(codPayment);
+        }
+
         return order;
     }
 
@@ -135,14 +153,25 @@ public class OrderServiceImpl implements IOrderService {
         User updatingUser = iuserRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
         // Authorization check
-        if ("ROLE_SELLER".equals(updatingUser.getRole())) {
+        String role = updatingUser.getRole() != null ? updatingUser.getRole().toUpperCase() : "";
+        if ("ROLE_SELLER".equals(role)) {
             // Check if this seller has any items in this order
             boolean isAssignedSeller = iorderItemRepository.findByOrderOrderId(orderId).stream()
-                .anyMatch(item -> item.getSeller().getUser().getUserId().equals(userId));
+                .anyMatch(item -> item.getSeller() != null && 
+                                  item.getSeller().getUser() != null && 
+                                  item.getSeller().getUser().getUserId().equals(userId));
             if (!isAssignedSeller) {
                 throw new RuntimeException("You are not authorized to update this order");
             }
-        } else if (!"ROLE_ADMIN".equals(updatingUser.getRole())) {
+        } else if ("ROLE_BUYER".equals(role)) {
+            // Allow buyers to cancel or return their own orders
+            if (!List.of("RETURNED", "CANCELLED").contains(status.toUpperCase())) {
+                throw new RuntimeException("User does not have permission to update order status to " + status);
+            }
+            if (!order.getUser().getUserId().equals(userId)) {
+                throw new RuntimeException("You are not authorized to update this order");
+            }
+        } else if (!"ROLE_ADMIN".equals(role)) {
             throw new RuntimeException("User does not have permission to update order status");
         }
 
@@ -158,6 +187,59 @@ public class OrderServiceImpl implements IOrderService {
         order.setStatusUpdatedAt(java.time.LocalDateTime.now());
         order.setUpdatedBy(updatingUser.getRole().replace("ROLE_", ""));
         order = iorderRepository.save(order);
+        logger.info("Order ID: {} status updated from {} to {} by {} ({})", orderId, currentStatus, targetStatus, updatingUser.getEmail(), updatingUser.getRole());
+
+        boolean isCod = ipaymentRepository.findByOrderOrderId(orderId)
+                .map(p -> "COD".equalsIgnoreCase(p.getMethod()))
+                .orElse(false);
+
+        // Add Revenue for COD on Shipped or Delivered
+        if (isCod && ("SHIPPED".equals(targetStatus) || "DELIVERED".equals(targetStatus))) {
+            // Avoid duplicate additions if already shipped/delivered
+            if (!"SHIPPED".equals(currentStatus) && !"DELIVERED".equals(currentStatus)) {
+                List<OrderItem> items = iorderItemRepository.findByOrderOrderId(orderId);
+                for (OrderItem item : items) {
+                    Seller seller = item.getSeller();
+                    if (seller != null) {
+                        BigDecimal currentRev = seller.getTotalRevenue() != null ? seller.getTotalRevenue() : BigDecimal.ZERO;
+                        seller.setTotalRevenue(currentRev.add(item.getSubtotal()));
+                        isellerRepository.save(seller);
+                        logger.debug("Added revenue {} to seller {} for order item in order #{}", item.getSubtotal(), seller.getBusinessName(), orderId);
+                    }
+                }
+            }
+        }
+
+        // Deduct revenue if cancelled, returned, or put on hold (COD only for hold)
+        if (!targetStatus.equals(currentStatus)) {
+            boolean shouldDeduct = false;
+            
+            if (isCod) {
+                // For COD, deduct if moving away from Shipped/Delivered to Cancelled, Returned, or Pending (Hold)
+                List<String> targetStatesThatDeduct = List.of("CANCELLED", "RETURNED", "PENDING");
+                shouldDeduct = targetStatesThatDeduct.contains(targetStatus) && 
+                               List.of("SHIPPED", "DELIVERED").contains(currentStatus);
+            } else {
+                // For Online, only deduct if actually cancelled or returned
+                List<String> targetStatesThatDeduct = List.of("CANCELLED", "RETURNED");
+                shouldDeduct = targetStatesThatDeduct.contains(targetStatus) && 
+                               List.of("PAID", "PROCESSING", "SHIPPED", "DELIVERED").contains(currentStatus);
+            }
+
+            if (shouldDeduct) {
+                List<OrderItem> items = iorderItemRepository.findByOrderOrderId(orderId);
+                for (OrderItem item : items) {
+                    Seller seller = item.getSeller();
+                    if (seller != null) {
+                        BigDecimal subtotal = item.getSubtotal();
+                        BigDecimal currentRev = seller.getTotalRevenue() != null ? seller.getTotalRevenue() : BigDecimal.ZERO;
+                        seller.setTotalRevenue(currentRev.subtract(subtotal));
+                        isellerRepository.save(seller);
+                        logger.debug("Deducted revenue {} from seller {} for {} order #{}", subtotal, seller.getBusinessName(), targetStatus.toLowerCase(), orderId);
+                    }
+                }
+            }
+        }
         
         // Save status history
         iorderStatusHistoryRepository.save(OrderStatusHistory.builder()
@@ -175,16 +257,20 @@ public class OrderServiceImpl implements IOrderService {
     private boolean isInvalidTransition(String current, String target) {
         if (current.equals(target)) return false;
         
-        if (List.of("DELIVERED", "CANCELLED", "REJECTED").contains(current)) {
+        if (current.equals("DELIVERED") && target.equals("RETURNED")) {
+            return false; // Allowed transition
+        }
+
+        if (List.of("DELIVERED", "CANCELLED", "REJECTED", "RETURNED").contains(current)) {
             return true; // Cannot move out of terminal states
         }
 
-        if (current.equals("SHIPPED") && List.of("PENDING", "PROCESSING").contains(target)) {
-            return true; // Cannot go back from Shipped
+        if (target.equals("PENDING")) {
+            return false; // Allowed "Hold" state
         }
 
-        if (current.equals("PROCESSING") && target.equals("PENDING")) {
-            return true; // Cannot go back from Processing
+        if (current.equals("SHIPPED") && target.equals("PROCESSING")) {
+            return true; // Still block going back to Processing from Shipped
         }
 
         return false;
@@ -197,7 +283,7 @@ public class OrderServiceImpl implements IOrderService {
 
     @Override
     public List<String> getOrderStatuses() {
-        return List.of("PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REJECTED");
+        return List.of("PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REJECTED", "RETURNED");
     }
 
     @Override
@@ -207,7 +293,7 @@ public class OrderServiceImpl implements IOrderService {
 
     @java.lang.SuppressWarnings("all")
     
-    public OrderServiceImpl(final IOrderRepository iorderRepository, final IOrderItemRepository iorderItemRepository, final ICartRepository icartRepository, final ICartItemRepository icartItemRepository, final IProductRepository iproductRepository, final IUserRepository iuserRepository, final IAddressRepository iaddressRepository, final INotificationService inotificationService, final IOrderStatusHistoryRepository iorderStatusHistoryRepository) {
+    public OrderServiceImpl(final IOrderRepository iorderRepository, final IOrderItemRepository iorderItemRepository, final ICartRepository icartRepository, final ICartItemRepository icartItemRepository, final IProductRepository iproductRepository, final IUserRepository iuserRepository, final IAddressRepository iaddressRepository, final INotificationService inotificationService, final IOrderStatusHistoryRepository iorderStatusHistoryRepository, final ISellerRepository isellerRepository, final IPaymentRepository ipaymentRepository) {
         this.iorderRepository = iorderRepository;
         this.iorderItemRepository = iorderItemRepository;
         this.icartRepository = icartRepository;
@@ -217,5 +303,7 @@ public class OrderServiceImpl implements IOrderService {
         this.iaddressRepository = iaddressRepository;
         this.inotificationService = inotificationService;
         this.iorderStatusHistoryRepository = iorderStatusHistoryRepository;
+        this.isellerRepository = isellerRepository;
+        this.ipaymentRepository = ipaymentRepository;
     }
 }

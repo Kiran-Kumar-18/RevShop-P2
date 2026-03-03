@@ -13,12 +13,16 @@ import com.rev.app.repository.IProductRepository;
 import com.rev.app.repository.IUserRepository;
 import com.rev.app.service.ICartService;
 import org.springframework.stereotype.Service;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@org.springframework.transaction.annotation.Transactional
 public class CartServiceImpl implements ICartService {
+    private static final Logger logger = LogManager.getLogger(CartServiceImpl.class);
     private final ICartRepository icartRepository;
     private final ICartItemRepository icartItemRepository;
     private final IProductRepository iproductRepository;
@@ -72,6 +76,31 @@ public class CartServiceImpl implements ICartService {
         }
         CartItem newItem = CartItem.builder().cart(cart).product(product).quantity(request.getQuantity()).build();
         icartItemRepository.save(newItem);
+        logger.info("Product ID: {} added to cart for user ID: {}", product.getProductId(), userId);
+        return getCartByUserId(userId);
+    }
+
+    @Override
+    public CartResponseDTO updateItemQuantity(Integer userId, Integer itemId, Integer quantity) {
+        if (itemId == null) {
+            throw new com.rev.app.exception.BadRequestException("Item ID must not be null");
+        }
+        
+        CartItem item = icartItemRepository.findById(itemId)
+            .orElseThrow(() -> new RuntimeException("Cart item not found"));
+            
+        if (quantity != null && quantity <= 0) {
+            return removeItemFromCart(userId, itemId);
+        }
+
+        Product product = item.getProduct();
+        if (product.getStockQuantity() < quantity) {
+            throw new RuntimeException("Insufficient stock. Only " + product.getStockQuantity() + " items left.");
+        }
+
+        item.setQuantity(quantity);
+        icartItemRepository.save(item);
+        logger.info("Updated quantity for Item ID: {} to {} for User ID: {}", itemId, quantity, userId);
         return getCartByUserId(userId);
     }
 
@@ -86,6 +115,7 @@ public class CartServiceImpl implements ICartService {
 
     @Override
     public CartResponseDTO clearCart(Integer userId) {
+        logger.info("Clearing cart for user ID: {}", userId);
         Cart cart = getOrCreateCart(userId);
         List<CartItem> items = icartItemRepository.findByCartCartId(cart.getCartId());
         icartItemRepository.deleteAll(items);

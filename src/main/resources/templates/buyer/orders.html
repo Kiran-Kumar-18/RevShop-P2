@@ -59,7 +59,15 @@
                                             <td>${new Date(order.orderDate).toLocaleDateString()}</td>
                                             <td><strong>${RevShop.formatCurrency(order.totalAmount)}</strong></td>
                                             <td>${RevShop.getStatusBadge(order.status)}</td>
-                                            <td><a href="${window.location.pathname}/${order.orderId}" class="btn btn-secondary btn-sm">View Details</a></td>
+                                            <td>
+                                                <a href="${window.location.pathname}/${order.orderId}" class="btn btn-secondary btn-sm">View Details</a>
+                                                ${['PENDING', 'PAID', 'PROCESSING', 'SHIPPED'].includes(order.status) ? `
+                                                    <button onclick="cancelOrder(${order.orderId})" class="btn btn-secondary btn-sm" style="margin-left:5px;">Cancel</button>
+                                                ` : ''}
+                                                ${order.status === 'DELIVERED' ? `
+                                                    <button onclick="returnOrder(${order.orderId})" class="btn btn-secondary btn-sm" style="margin-left:5px;">Return</button>
+                                                ` : ''}
+                                            </td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -81,6 +89,32 @@
         }
       } catch (err) {
         container.innerHTML = '<p>Error loading orders.</p>';
+      }
+    }
+
+    async function cancelOrder(orderId) {
+      if (!confirm('Are you sure you want to cancel this order?')) return;
+      try {
+        const res = await RevShop.updateOrderStatus(orderId, 'CANCELLED');
+        if (res.success) {
+          RevShop.showToast('Order cancelled successfully', 'info');
+          loadOrders(); // Refresh the list
+        }
+      } catch (err) {
+        RevShop.showToast(err.message, 'danger');
+      }
+    }
+
+    async function returnOrder(orderId) {
+      if (!confirm('Are you sure you want to return this order? This action cannot be undone.')) return;
+      try {
+        const res = await RevShop.updateOrderStatus(orderId, 'RETURNED');
+        if (res.success) {
+          RevShop.showToast('Order returned successfully', 'success');
+          loadOrders(); // Refresh the list
+        }
+      } catch (err) {
+        RevShop.showToast(err.message, 'danger');
       }
     }
 

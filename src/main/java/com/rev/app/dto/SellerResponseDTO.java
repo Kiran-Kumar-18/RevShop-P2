@@ -6,6 +6,7 @@ public class SellerResponseDTO {
     private String businessName;
     private String gstNumber;
     private String address;
+    private java.math.BigDecimal totalRevenue;
 
 
     @java.lang.SuppressWarnings("all")
@@ -26,6 +27,8 @@ public class SellerResponseDTO {
         @java.lang.SuppressWarnings("all")
         
         private String address;
+        @java.lang.SuppressWarnings("all")
+        private java.math.BigDecimal totalRevenue;
 
         @java.lang.SuppressWarnings("all")
         
@@ -72,9 +75,15 @@ public class SellerResponseDTO {
         }
 
         @java.lang.SuppressWarnings("all")
+        public SellerResponseDTO.SellerResponseDTOBuilder totalRevenue(final java.math.BigDecimal totalRevenue) {
+            this.totalRevenue = totalRevenue;
+            return this;
+        }
+
+        @java.lang.SuppressWarnings("all")
         
         public SellerResponseDTO build() {
-            return new SellerResponseDTO(this.sellerId, this.userName, this.businessName, this.gstNumber, this.address);
+            return new SellerResponseDTO(this.sellerId, this.userName, this.businessName, this.gstNumber, this.address, this.totalRevenue);
         }
 
         @java.lang.Override
@@ -122,6 +131,11 @@ public class SellerResponseDTO {
     }
 
     @java.lang.SuppressWarnings("all")
+    public java.math.BigDecimal getTotalRevenue() {
+        return this.totalRevenue;
+    }
+
+    @java.lang.SuppressWarnings("all")
     
     public void setSellerId(final Integer sellerId) {
         this.sellerId = sellerId;
@@ -149,6 +163,11 @@ public class SellerResponseDTO {
     
     public void setAddress(final String address) {
         this.address = address;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    public void setTotalRevenue(final java.math.BigDecimal totalRevenue) {
+        this.totalRevenue = totalRevenue;
     }
 
     @java.lang.Override
@@ -216,11 +235,12 @@ public class SellerResponseDTO {
 
     @java.lang.SuppressWarnings("all")
     
-    public SellerResponseDTO(final Integer sellerId, final String userName, final String businessName, final String gstNumber, final String address) {
+    public SellerResponseDTO(final Integer sellerId, final String userName, final String businessName, final String gstNumber, final String address, final java.math.BigDecimal totalRevenue) {
         this.sellerId = sellerId;
         this.userName = userName;
         this.businessName = businessName;
         this.gstNumber = gstNumber;
         this.address = address;
+        this.totalRevenue = totalRevenue;
     }
 }

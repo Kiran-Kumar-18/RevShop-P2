@@ -39,9 +39,7 @@ public class Cart {
         CartBuilder() {
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Cart.CartBuilder cartId(final Integer cartId) {
@@ -49,9 +47,7 @@ public class Cart {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Cart.CartBuilder user(final User user) {
@@ -59,9 +55,7 @@ public class Cart {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Cart.CartBuilder createdAt(final LocalDateTime createdAt) {

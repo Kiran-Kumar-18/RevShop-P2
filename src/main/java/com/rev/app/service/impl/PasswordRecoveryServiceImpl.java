@@ -7,6 +7,8 @@ import com.rev.app.entity.User;
 import com.rev.app.repository.IPasswordRecoveryRepository;
 import com.rev.app.repository.IUserRepository;
 import com.rev.app.service.IPasswordRecoveryService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +17,8 @@ import java.util.UUID;
 
 @Service
 public class PasswordRecoveryServiceImpl implements IPasswordRecoveryService {
+    private static final Logger logger = LogManager.getLogger(PasswordRecoveryServiceImpl.class);
+    
     private final IPasswordRecoveryRepository ipasswordRecoveryRepository;
     private final IUserRepository iuserRepository;
     private final PasswordEncoder passwordEncoder;
@@ -27,7 +31,7 @@ public class PasswordRecoveryServiceImpl implements IPasswordRecoveryService {
         PasswordRecovery recovery = PasswordRecovery.builder().user(user).token(token).expiresAt(LocalDateTime.now().plusHours(1)).isUsed(false).build();
         ipasswordRecoveryRepository.save(recovery);
         // In production: send token via email service
-        System.out.println("[PASSWORD RECOVERY] Token for " + email + ": " + token);
+        logger.info("[PASSWORD RECOVERY] Token for {}: {}", email, token);
     }
 
     @Override

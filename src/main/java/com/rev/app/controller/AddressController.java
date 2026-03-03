@@ -9,10 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping("/api/addresses")
 public class AddressController {
+    private static final Logger logger = LogManager.getLogger(AddressController.class);
 
     private final IAddressService iaddressService;
 
@@ -25,6 +28,7 @@ public class AddressController {
             @PathVariable Integer userId,
             @Valid @RequestBody AddressRequestDTO request) {
 
+        logger.info("Creating new address for User ID: {}", userId);
         AddressResponseDTO response = iaddressService.createAddress(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response, "Address created successfully"));
@@ -35,6 +39,7 @@ public class AddressController {
             @PathVariable Integer addressId,
             @Valid @RequestBody AddressRequestDTO request) {
 
+        logger.info("Updating address ID: {}", addressId);
         AddressResponseDTO response = iaddressService.updateAddress(addressId, request);
         return ResponseEntity.ok(
                 ApiResponse.success(response, "Address updated successfully"));
@@ -44,6 +49,7 @@ public class AddressController {
     public ResponseEntity<ApiResponse<Void>> deleteAddress(
             @PathVariable Integer addressId) {
 
+        logger.info("Deleting address ID: {}", addressId);
         iaddressService.deleteAddress(addressId);
         return ResponseEntity.ok(
                 ApiResponse.success(null, "Address deleted successfully"));

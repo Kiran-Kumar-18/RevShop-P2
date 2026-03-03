@@ -12,15 +12,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewController {
+    private static final Logger logger = LogManager.getLogger(ReviewController.class);
     private final IReviewService ireviewService;
     private final ReviewMapper reviewMapper;
 
     @PostMapping
     public ResponseEntity<ApiResponse<ReviewResponseDTO>> addReview(@Valid @RequestBody ReviewRequestDTO request) {
+        logger.info("Adding review for Product ID: {}", request.getProductId());
         ReviewResponseDTO review = reviewMapper.toDto(ireviewService.addReview(request));
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(review, "Review added successfully"));
     }
@@ -34,6 +38,7 @@ public class ReviewController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Integer id, @RequestParam Integer userId) {
+        logger.info("Deleting review ID: {} by User ID: {}", id, userId);
         ireviewService.deleteReview(id, userId);
         return ResponseEntity.ok(ApiResponse.success(null, "Review deleted successfully"));
     }

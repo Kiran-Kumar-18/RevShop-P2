@@ -8,10 +8,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping("/api/categories")
 public class CategoryController {
+    private static final Logger logger = LogManager.getLogger(CategoryController.class);
     private final ICategoryService icategoryService;
     private final CategoryMapper categoryMapper;
 

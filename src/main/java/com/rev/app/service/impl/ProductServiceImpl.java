@@ -15,9 +15,12 @@ import com.rev.app.service.IProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Service
 public class ProductServiceImpl implements IProductService {
+    private static final Logger logger = LogManager.getLogger(ProductServiceImpl.class);
     private final IProductRepository iproductRepository;
     private final ICategoryRepository icategoryRepository;
     private final ISellerRepository isellerRepository;
@@ -72,7 +75,9 @@ public class ProductServiceImpl implements IProductService {
             .seller(seller)
             .imageUrl(request.getImageUrl())
             .build();
-        return productMapper.toDto(iproductRepository.save(product));
+        Product savedProduct = iproductRepository.save(product);
+        logger.info("New product created: {} (ID: {}) by Seller ID: {}", savedProduct.getName(), savedProduct.getProductId(), request.getSellerId());
+        return productMapper.toDto(savedProduct);
     }
 
     @Override
@@ -90,15 +95,19 @@ public class ProductServiceImpl implements IProductService {
         product.setStockThreshold(request.getStockThreshold());
         product.setIsActive(request.getIsActive());
         product.setImageUrl(request.getImageUrl());
-        return productMapper.toDto(iproductRepository.save(product));
+        Product updatedProduct = iproductRepository.save(product);
+        logger.info("Product updated: {} (ID: {})", updatedProduct.getName(), updatedProduct.getProductId());
+        return productMapper.toDto(updatedProduct);
     }
 
     @Override
     public void deleteProduct(Integer id) {
         if (id == null) {
+            logger.error("Product deletion failed: ID is null");
             throw new RuntimeException("Product ID must not be null");
         }
         iproductRepository.deleteById(id);
+        logger.info("Product deleted. ID: {}", id);
     }
 
     @Override

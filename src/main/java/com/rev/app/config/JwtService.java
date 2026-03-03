@@ -4,6 +4,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -12,6 +14,7 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
+    private static final Logger logger = LogManager.getLogger(JwtService.class);
 
     private static final String SECRET_KEY = "3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b";
     private static final long EXPIRATION_TIME = 86400000;
@@ -30,6 +33,7 @@ public class JwtService {
     }
 
     public String generateToken(String username) {
+        logger.debug("Generating JWT token for user: {}", username);
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))

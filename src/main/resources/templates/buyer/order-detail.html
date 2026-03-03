@@ -36,7 +36,7 @@
   <th:block th:replace="~{fragments/layout :: scripts}" />
 
   <script th:inline="javascript">
-    const orderId = [[${ orderId }]];
+    const orderId = /*[[${orderId}]]*/ 0;
 
     async function loadOrderDetail() {
       const container = document.getElementById('order-detail-content');
@@ -140,8 +140,16 @@
                                         <span>Total:</span>
                                         <span style="color:var(--secondary);">${RevShop.formatCurrency(order.totalAmount)}</span>
                                     </div>
+                                    <div id="order-actions-container" style="margin-top:var(--space-xl);">
+                                        ${['PENDING', 'PAID', 'PROCESSING', 'SHIPPED'].includes(order.status) && user && user.role === 'ROLE_BUYER' ? `
+                                            <button onclick="cancelOrder(${order.orderId})" class="btn btn-secondary btn-block" style="margin-bottom:10px;">Cancel Order</button>
+                                        ` : ''}
+                                        ${order.status === 'DELIVERED' && user && user.role === 'ROLE_BUYER' ? `
+                                            <button onclick="returnOrder(${order.orderId})" class="btn btn-secondary btn-block" style="margin-bottom:10px;">Return Order</button>
+                                        ` : ''}
+                                    </div>
                                     <a href="${user && user.role === 'ROLE_SELLER' ? '/seller/orders' : '/orders'}" 
-                                       class="btn btn-secondary btn-block" style="margin-top:var(--space-xl);">
+                                       class="btn btn-secondary btn-block">
                                        ← Back to ${user && user.role === 'ROLE_SELLER' ? 'Dashboard' : 'My Orders'}
                                     </a>
                                 </div>
@@ -154,6 +162,32 @@
       } catch (err) {
         console.error(err);
         container.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:var(--space-xl);">Could not load order details.</p>';
+      }
+    }
+
+    async function cancelOrder(id) {
+      if (!confirm('Are you sure you want to cancel this order?')) return;
+      try {
+        const res = await RevShop.updateOrderStatus(id, 'CANCELLED');
+        if (res.success) {
+          RevShop.showToast('Order cancelled successfully', 'info');
+          loadOrderDetail(); // Refresh page data
+        }
+      } catch (err) {
+        RevShop.showToast(err.message, 'danger');
+      }
+    }
+
+    async function returnOrder(id) {
+      if (!confirm('Are you sure you want to return this order? This action cannot be undone.')) return;
+      try {
+        const res = await RevShop.updateOrderStatus(id, 'RETURNED');
+        if (res.success) {
+          RevShop.showToast('Order returned successfully', 'success');
+          loadOrderDetail(); // Refresh page data
+        }
+      } catch (err) {
+        RevShop.showToast(err.message, 'danger');
       }
     }
 

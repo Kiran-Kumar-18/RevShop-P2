@@ -35,9 +35,7 @@ public class Category {
         CategoryBuilder() {
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Category.CategoryBuilder categoryId(final Integer categoryId) {
@@ -45,9 +43,7 @@ public class Category {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Category.CategoryBuilder name(final String name) {
@@ -55,9 +51,7 @@ public class Category {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Category.CategoryBuilder description(final String description) {

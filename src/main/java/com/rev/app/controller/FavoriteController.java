@@ -9,21 +9,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping("/api/favorites")
 public class FavoriteController {
+    private static final Logger logger = LogManager.getLogger(FavoriteController.class);
     private final IFavoriteService ifavoriteService;
     private final FavoriteMapper favoriteMapper;
 
     @PostMapping("/{userId}/{productId}")
     public ResponseEntity<ApiResponse<FavoriteResponseDTO>> addFavorite(@PathVariable Integer userId, @PathVariable Integer productId) {
+        logger.info("Adding favorite: User ID: {}, Product ID: {}", userId, productId);
         FavoriteResponseDTO favorite = favoriteMapper.toDto(ifavoriteService.addFavorite(userId, productId));
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(favorite, "Favorite added successfully"));
     }
 
     @DeleteMapping("/{userId}/{productId}")
     public ResponseEntity<ApiResponse<Void>> removeFavorite(@PathVariable Integer userId, @PathVariable Integer productId) {
+        logger.info("Removing favorite: User ID: {}, Product ID: {}", userId, productId);
         ifavoriteService.removeFavorite(userId, productId);
         return ResponseEntity.ok(ApiResponse.success(null, "Favorite removed successfully"));
     }

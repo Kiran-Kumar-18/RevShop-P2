@@ -38,9 +38,7 @@ public class UserResponseDTO {
         UserResponseDTOBuilder() {
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public UserResponseDTO.UserResponseDTOBuilder userId(final Integer userId) {
@@ -48,9 +46,7 @@ public class UserResponseDTO {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public UserResponseDTO.UserResponseDTOBuilder name(final String name) {
@@ -58,9 +54,7 @@ public class UserResponseDTO {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public UserResponseDTO.UserResponseDTOBuilder email(final String email) {
@@ -68,9 +62,7 @@ public class UserResponseDTO {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public UserResponseDTO.UserResponseDTOBuilder phone(final String phone) {
@@ -78,9 +70,7 @@ public class UserResponseDTO {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public UserResponseDTO.UserResponseDTOBuilder role(final String role) {
@@ -88,9 +78,6 @@ public class UserResponseDTO {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
         @java.lang.SuppressWarnings("all")
         
         public UserResponseDTO.UserResponseDTOBuilder createdAt(final LocalDateTime createdAt) {

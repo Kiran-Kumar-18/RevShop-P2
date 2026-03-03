@@ -12,9 +12,12 @@ import com.rev.app.service.IFavoriteService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Service
 public class FavoriteServiceImpl implements IFavoriteService {
+    private static final Logger logger = LogManager.getLogger(FavoriteServiceImpl.class);
     private final IFavoriteRepository ifavoriteRepository;
     private final IUserRepository iuserRepository;
     private final IProductRepository iproductRepository;
@@ -34,6 +37,7 @@ public class FavoriteServiceImpl implements IFavoriteService {
             throw new BadRequestException("Product already in favorites");
         }
         Favorite favorite = Favorite.builder().user(user).product(product).build();
+        logger.info("Favorite added: User ID: {}, Product ID: {}", userId, productId);
         return ifavoriteRepository.save(favorite);
     }
 
@@ -43,6 +47,7 @@ public class FavoriteServiceImpl implements IFavoriteService {
         List<Favorite> favorites = ifavoriteRepository.findByUserUserId(userId);
         Favorite toDelete = favorites.stream().filter(f -> f.getProduct().getProductId().equals(productId)).findFirst().orElseThrow(() -> new ResourceNotFoundException("Favorite not found for product: " + productId));
         ifavoriteRepository.delete(toDelete);
+        logger.info("Favorite removed: User ID: {}, Product ID: {}", userId, productId);
     }
 
     @Override

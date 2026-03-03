@@ -55,9 +55,7 @@ public class Review {
         ReviewBuilder() {
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Review.ReviewBuilder reviewId(final Integer reviewId) {
@@ -65,9 +63,7 @@ public class Review {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Review.ReviewBuilder user(final User user) {
@@ -75,9 +71,6 @@ public class Review {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
         @java.lang.SuppressWarnings("all")
         
         public Review.ReviewBuilder product(final Product product) {
@@ -85,9 +78,7 @@ public class Review {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Review.ReviewBuilder rating(final Integer rating) {
@@ -95,9 +86,7 @@ public class Review {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Review.ReviewBuilder reviewText(final String reviewText) {
@@ -105,9 +94,7 @@ public class Review {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Review.ReviewBuilder createdAt(final LocalDateTime createdAt) {

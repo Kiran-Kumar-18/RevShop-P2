@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 public class PaymentRequestDTO {
     @NotNull(message = "Order ID is required")
     private Integer orderId;
-    private String method; // "CREDIT_CARD", "PAYPAL", etc.
+    private String method;
     private BigDecimal amount;
 
 

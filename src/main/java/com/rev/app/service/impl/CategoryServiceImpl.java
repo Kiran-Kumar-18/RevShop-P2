@@ -6,13 +6,17 @@ import com.rev.app.repository.ICategoryRepository;
 import com.rev.app.service.ICategoryService;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Service
 public class CategoryServiceImpl implements ICategoryService {
+    private static final Logger logger = LogManager.getLogger(CategoryServiceImpl.class);
     private final ICategoryRepository icategoryRepository;
 
     @Override
     public List<Category> getAllCategories() {
+        logger.debug("Fetching all categories");
         return icategoryRepository.findAll();
     }
 

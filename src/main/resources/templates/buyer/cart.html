@@ -102,11 +102,16 @@
                             <img src="${item.productImageUrl}" alt="${item.productName}" class="cart-img">
                             <div style="flex:1">
                                 <div style="font-weight:bold; font-size:18px;">${item.productName}</div>
-                                <div style="color:#666; margin: 5px 0;">Qty: ${item.quantity} x ${RevShop.formatCurrency(item.price)}</div>
-                                <div style="color:#007bff; font-weight:bold;">Total: ${RevShop.formatCurrency(item.itemTotal)}</div>
+                                <div style="color:#666; margin: 5px 0;">Price: ${RevShop.formatCurrency(item.price)}</div>
+                                <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                                    <button class="btn btn-sm btn-outline" style="width:30px; height:30px; display:flex; align-items:center; justify-content:center; padding:0" onclick="updateQuantity(${item.cartItemId}, ${item.quantity - 1})">-</button>
+                                    <span style="font-weight:bold; font-size:16px; min-width:20px; text-align:center">${item.quantity}</span>
+                                    <button class="btn btn-sm btn-outline" style="width:30px; height:30px; display:flex; align-items:center; justify-content:center; padding:0" onclick="updateQuantity(${item.cartItemId}, ${item.quantity + 1})">+</button>
+                                </div>
+                                <div style="color:#007bff; font-weight:bold; margin-top:5px;">Subtotal: ${RevShop.formatCurrency(item.itemTotal)}</div>
                             </div>
                             <div>
-                                <button class="btn btn-sm btn-danger" onclick="removeItem(${item.cartItemId})">Remove</button>
+                                <button class="btn btn-sm btn-secondary" onclick="removeItem(${item.cartItemId})">Remove</button>
                             </div>
                         </div>
                     `).join('');
@@ -116,6 +121,19 @@
                 }
             } catch (err) {
                 container.innerHTML = '<p>Error loading cart items.</p>';
+            }
+        }
+
+        async function updateQuantity(itemId, newQuantity) {
+            const user = RevShop.getUserInfo();
+            try {
+                const res = await RevShop.updateCartItemQuantity(user.userId, itemId, newQuantity);
+                if (res.success) {
+                    loadCart();
+                    updateNavbar();
+                }
+            } catch (e) {
+                RevShop.showToast(e.message, 'danger');
             }
         }
 

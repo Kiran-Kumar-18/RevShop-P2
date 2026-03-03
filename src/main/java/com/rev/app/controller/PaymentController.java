@@ -5,6 +5,8 @@ import com.rev.app.dto.PaymentResponseDTO;
 import com.rev.app.mapper.PaymentMapper;
 import com.rev.app.rest.ApiResponse;
 import com.rev.app.service.IPaymentService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -12,12 +14,14 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
+    private static final Logger logger = LogManager.getLogger(PaymentController.class);
+    
     private final IPaymentService ipaymentService;
     private final PaymentMapper paymentMapper;
 
     @PostMapping
     public ResponseEntity<ApiResponse<PaymentResponseDTO>> processPayment(@Valid @RequestBody PaymentRequestDTO request) {
-        System.out.println("Processing Payment Request: " + request);
+        logger.info("Processing Payment Request: {}", request);
         PaymentResponseDTO payment = paymentMapper.toDto(ipaymentService.processPayment(request));
         return ResponseEntity.ok(ApiResponse.success(payment, "Payment processed successfully"));
     }

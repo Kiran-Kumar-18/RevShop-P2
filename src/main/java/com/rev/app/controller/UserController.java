@@ -6,10 +6,13 @@ import com.rev.app.rest.ApiResponse;
 import com.rev.app.service.IUserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+    private static final Logger logger = LogManager.getLogger(UserController.class);
     private final IUserService iuserService;
     private final UserMapper userMapper;
 

@@ -12,9 +12,12 @@ import com.rev.app.service.IAddressService;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Service
 public class AddressServiceImpl implements IAddressService {
+    private static final Logger logger = LogManager.getLogger(AddressServiceImpl.class);
     private final IAddressRepository iaddressRepository;
     private final IUserRepository iuserRepository;
     private final AddressMapper addressMapper;
@@ -26,7 +29,9 @@ public class AddressServiceImpl implements IAddressService {
         }
         User user = iuserRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Address address = Address.builder().user(user).fullName(request.getFullName()).phone(request.getPhone()).addressLine1(request.getAddressLine1()).addressLine2(request.getAddressLine2()).city(request.getCity()).state(request.getState()).postalCode(request.getPostalCode()).country(request.getCountry()).addressType(request.getAddressType()).build();
-        return addressMapper.toDto(iaddressRepository.save(address));
+        AddressResponseDTO result = addressMapper.toDto(iaddressRepository.save(address));
+        logger.info("Address created for User ID: {}, Address ID: {}", userId, result.getAddressId());
+        return result;
     }
 
     @Override
@@ -56,6 +61,7 @@ public class AddressServiceImpl implements IAddressService {
             throw new ResourceNotFoundException("Address not found");
         }
         iaddressRepository.deleteById(addressId);
+        logger.info("Address deleted: ID {}", addressId);
     }
 
     @Override

@@ -1,10 +1,17 @@
- const RevShop = (() => {
+const RevShop = (() => {
     const API_BASE = '/api';
 
     // ---- Token Management ----
     function getToken() { return localStorage.getItem('rs_token'); }
-    function setToken(token) { localStorage.setItem('rs_token', token); }
-    function removeToken() { localStorage.removeItem('rs_token'); }
+    function setToken(token) {
+        localStorage.setItem('rs_token', token);
+        // Set cookie for server-side access on page loads
+        document.cookie = `rs_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+    }
+    function removeToken() {
+        localStorage.removeItem('rs_token');
+        document.cookie = "rs_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
+    }
 
     function getUserInfo() {
         try {
@@ -148,6 +155,10 @@
                 quantity: parseInt(quantity)
             })
         });
+    }
+
+    async function updateCartItemQuantity(userId, itemId, quantity) {
+        return await apiFetch(`/cart/${userId}/items/${itemId}?quantity=${quantity}`, { method: 'PUT' });
     }
 
     async function removeFromCart(userId, itemId) {
@@ -305,7 +316,7 @@
         getToken, setToken, getUserInfo, setUserInfo, isLoggedIn, logout,
         login, register, apiFetch,
         getProducts, getProduct, getSellerProducts, getSellerInfo, createProduct, updateProduct, deleteProduct, updateStock, uploadImage,
-        getCart, addToCart, removeFromCart,
+        getCart, addToCart, removeFromCart, updateCartItemQuantity,
         placeOrder, getOrder, getUserOrders, getSellerOrders, updateOrderStatus,
         processPayment,
         getSecurityQuestion, resetPassword,

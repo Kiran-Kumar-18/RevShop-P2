@@ -99,9 +99,7 @@ public class Product {
         ProductBuilder() {
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder productId(final Integer productId) {
@@ -109,9 +107,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder seller(final Seller seller) {
@@ -119,9 +115,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder category(final Category category) {
@@ -129,9 +123,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder name(final String name) {
@@ -139,9 +131,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder description(final String description) {
@@ -149,9 +139,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder price(final BigDecimal price) {
@@ -159,9 +147,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder mrp(final BigDecimal mrp) {
@@ -169,9 +155,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder discountPrice(final BigDecimal discountPrice) {
@@ -179,9 +163,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder stockQuantity(final Integer stockQuantity) {
@@ -189,9 +171,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder stockThreshold(final Integer stockThreshold) {
@@ -199,9 +179,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder isActive(final Boolean isActive) {
@@ -209,9 +187,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder createdAt(final LocalDateTime createdAt) {
@@ -219,9 +195,7 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
+
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder updatedAt(final LocalDateTime updatedAt) {
@@ -229,9 +203,6 @@ public class Product {
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
         @java.lang.SuppressWarnings("all")
         
         public Product.ProductBuilder imageUrl(final String imageUrl) {

@@ -18,6 +18,7 @@ public class SellerMapper {
                 .businessName(entity.getBusinessName())
                 .gstNumber(entity.getGstNumber())
                 .address(entity.getAddress())
+                .totalRevenue(entity.getTotalRevenue())
                 .build();
     }
 }
